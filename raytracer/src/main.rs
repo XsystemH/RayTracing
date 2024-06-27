@@ -4,7 +4,7 @@ mod vec3;
 
 use crate::color::Color;
 use crate::ray::Ray;
-use crate::vec3::{Point3, unit_vector, Vec3};
+use crate::vec3::{unit_vector, Point3, Vec3};
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
