@@ -1,14 +1,14 @@
-mod vec3;
 mod color;
 mod ray;
+mod vec3;
 
+use crate::color::Color;
+use crate::ray::Ray;
+use crate::vec3::{Point3, unit_vector, Vec3};
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
 use std::{fs::File, process::exit};
-use crate::vec3::{Point3, unit_vector, Vec3};
-use crate::color::Color;
-use crate::ray::Ray;
 
 fn ray_color(r: Ray) -> Color {
     let unit_direction = unit_vector(&r.direction());
@@ -23,8 +23,8 @@ fn main() {
 
     // Image
     let aspect_ratio: f64 = 16.0 / 9.0;
-    let image_width:u32 = 400;
-    let image_height:u32 = (image_width as f64 / aspect_ratio) as u32;
+    let image_width: u32 = 400;
+    let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
     // if image_height < 1 { let image_height: u32 = 1; }
     let quality = 100;
     let mut img: RgbImage = ImageBuffer::new(image_width, image_height);
@@ -34,14 +34,19 @@ fn main() {
     let viewport_height: f64 = 2.0;
     let viewport_width: f64 = viewport_height * (image_width as f64 / image_height as f64);
     let camera_center: Point3 = Point3::new(0.0, 0.0, 0.0);
-        // edge vector
+    // edge vector
     let viewport_u: Vec3 = Vec3::new(viewport_width, 0.0, 0.0);
     let viewport_v: Vec3 = Vec3::new(0.0, -viewport_height, 0.0);
-        // delta vector
-    let pixel_delta_u: Vec3 = viewport_u.clone() / image_width as f64;    let pixel_delta_v: Vec3 = viewport_v.clone() / image_width as f64;
-        // upper left
-    let viewport_upper_left: Point3 = camera_center.clone() - Vec3::new(0.0, 0.0, focal_length) - viewport_u.clone() / 2.0 - viewport_v.clone() / 2.0;
-    let pixel100_loc: Point3 = viewport_upper_left.clone() + (pixel_delta_u.clone() + pixel_delta_v.clone()) * 0.5;
+    // delta vector
+    let pixel_delta_u: Vec3 = viewport_u.clone() / image_width as f64;
+    let pixel_delta_v: Vec3 = viewport_v.clone() / image_width as f64;
+    // upper left
+    let viewport_upper_left: Point3 = camera_center.clone()
+        - Vec3::new(0.0, 0.0, focal_length)
+        - viewport_u.clone() / 2.0
+        - viewport_v.clone() / 2.0;
+    let pixel100_loc: Point3 =
+        viewport_upper_left.clone() + (pixel_delta_u.clone() + pixel_delta_v.clone()) * 0.5;
 
     // Render
 
@@ -55,7 +60,9 @@ fn main() {
         for i in 0..image_width {
             let pixel = img.get_pixel_mut(i, j);
 
-            let pixel_center: Point3 = pixel100_loc.clone() + pixel_delta_u.clone() * i as f64 + pixel_delta_v.clone() * j as f64;
+            let pixel_center: Point3 = pixel100_loc.clone()
+                + pixel_delta_u.clone() * i as f64
+                + pixel_delta_v.clone() * j as f64;
             let ray_direction: Vec3 = pixel_center.clone() - camera_center.clone();
             let r: Ray = Ray::new(&camera_center, &ray_direction);
 

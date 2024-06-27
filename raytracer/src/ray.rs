@@ -1,5 +1,5 @@
-use crate::vec3::Vec3;
 use crate::vec3::Point3;
+use crate::vec3::Vec3;
 use std::f64;
 
 pub struct Ray {
