@@ -25,7 +25,7 @@ fn main() {
     let aspect_ratio: f64 = 16.0 / 9.0;
     let image_width:u32 = 400;
     let image_height:u32 = (image_width as f64 / aspect_ratio) as u32;
-    if image_height < 1 { let image_height: u32 = 1; }
+    // if image_height < 1 { let image_height: u32 = 1; }
     let quality = 100;
     let mut img: RgbImage = ImageBuffer::new(image_width, image_height);
 

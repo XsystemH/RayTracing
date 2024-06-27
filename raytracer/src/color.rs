@@ -1,7 +1,6 @@
 use crate::vec3::Vec3;
 
-pub(crate) type Color = Vec3;
-use image::{ImageBuffer, RgbImage};
+pub type Color = Vec3;
 
 impl Color {
     pub fn write_color(&self) -> image::Rgb<u8> {
@@ -10,8 +9,4 @@ impl Color {
         let b = (self.z() * 255.99) as u8;
         image::Rgb([r, g, b])
     }
-}
-
-pub fn write_color (pixel_color: &Color) -> image::Rgb<u8> {
-    image::Rgb([pixel_color.x() as u8, pixel_color.y() as u8, pixel_color.z() as u8])
 }

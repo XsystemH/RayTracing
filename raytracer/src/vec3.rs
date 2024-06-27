@@ -1,5 +1,4 @@
 use std::f64;
-use std::f64::consts::PI;
 use std::ops::{
     Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
 };
