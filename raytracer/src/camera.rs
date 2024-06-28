@@ -3,7 +3,7 @@ use crate::hittable::Hittable;
 use crate::hittable_list::HittableList;
 use crate::interval::Interval;
 use crate::ray::Ray;
-use crate::vec3::{unit_vector, Point3, Vec3, random_unit_vector};
+use crate::vec3::{random_unit_vector, unit_vector, Point3, Vec3};
 use image::RgbImage; // ImageBuffer
 use indicatif::ProgressBar;
 use rand::Rng;
