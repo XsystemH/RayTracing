@@ -75,7 +75,7 @@ fn main() {
     progress.finish();
 
     println!(
-        "Output image as \"{}\"",
+        "Ouput image as \"{}\"",
         style(path.to_str().unwrap()).yellow()
     );
     let output_image = image::DynamicImage::ImageRgb8(img);
