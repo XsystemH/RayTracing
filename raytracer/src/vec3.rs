@@ -78,11 +78,11 @@ pub fn random_unit_vector() -> Vec3 {
 }
 pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
     let on_unit_sphere = random_unit_vector();
-    return if dot(&on_unit_sphere, &normal) > 0.0 {
+    if dot(&on_unit_sphere, normal) > 0.0 {
         on_unit_sphere
     } else {
         -on_unit_sphere
-    };
+    }
 }
 
 impl Add for Vec3 {
