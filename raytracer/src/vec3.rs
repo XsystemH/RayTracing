@@ -76,7 +76,7 @@ pub fn random_in_unit_sphere() -> Vec3 {
 pub fn random_unit_vector() -> Vec3 {
     unit_vector(&random_in_unit_sphere())
 }
-pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
+pub fn _random_on_hemisphere(normal: &Vec3) -> Vec3 {
     let on_unit_sphere = random_unit_vector();
     if dot(&on_unit_sphere, normal) > 0.0 {
         on_unit_sphere
