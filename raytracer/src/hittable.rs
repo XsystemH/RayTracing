@@ -15,7 +15,7 @@ impl HitRecord {
         let front_face: bool = vec3::dot(&r.direction(), outward_normal) < 0.0;
         let mut normal: Vec3 = outward_normal.clone();
         if !front_face {
-            normal = - normal;
+            normal = -normal;
         }
         Self {
             p: p.clone(),

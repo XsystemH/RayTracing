@@ -1,21 +1,21 @@
 mod color;
-mod ray;
-mod vec3;
 mod hittable;
-mod sphere;
 mod hittable_list;
+mod ray;
+mod sphere;
+mod vec3;
 
 use crate::color::Color;
+use crate::hittable::Hittable;
+use crate::hittable_list::HittableList;
 use crate::ray::Ray;
+use crate::sphere::Sphere;
 use crate::vec3::{unit_vector, Point3, Vec3};
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
-use std::{fs::File, process::exit};
 use std::rc::Rc;
-use crate::hittable::Hittable;
-use crate::hittable_list::HittableList;
-use crate::sphere::Sphere;
+use std::{fs::File, process::exit};
 
 fn ray_color(r: Ray, world: &dyn Hittable) -> Color {
     if let Some(hit_record) = world.hit(&r, 0.0, f64::INFINITY) {
