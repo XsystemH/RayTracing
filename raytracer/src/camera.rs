@@ -95,7 +95,7 @@ impl Camera {
                     let r = self.get_ray(i, j);
                     pixel_color += ray_color(r, &world);
                 }
-                pixel_color = pixel_color * self.pixel_samples_scale;
+                pixel_color *= self.pixel_samples_scale;
 
                 let pixel = self.img.get_pixel_mut(i, j);
                 *pixel = pixel_color.write_color();
