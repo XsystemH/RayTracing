@@ -1,13 +1,16 @@
+use std::sync::{Arc, Mutex};
+use std::thread;
 use crate::color::Color;
 use crate::hittable::Hittable;
 use crate::hittable_list::HittableList;
 use crate::interval::Interval;
 use crate::ray::Ray;
 use crate::vec3::{random_on_hemisphere, unit_vector, Point3, Vec3};
-use image::{ImageBuffer, RgbImage};
+use image::{RgbImage}; // ImageBuffer
 use indicatif::ProgressBar;
 use rand::Rng;
 
+#[derive(Clone)]
 pub struct Camera {
     // image
     pub aspect_ratio: f64,
@@ -69,7 +72,7 @@ impl Camera {
             samples_per_pixel,
             pixel_samples_scale,
             max_depth,
-            img: ImageBuffer::new(image_width, image_height),
+            img: RgbImage::new(image_width, image_height),
             focal_length,
             viewport_height,
             viewport_width,
@@ -83,32 +86,79 @@ impl Camera {
         }
     }
 
-    pub fn render(&mut self, world: HittableList) -> &RgbImage {
+    pub fn render(&mut self, world: HittableList) {
         let progress = if option_env!("CI").unwrap_or_default() == "true" {
             ProgressBar::hidden()
         } else {
             ProgressBar::new((self.image_height * self.image_width) as u64)
         };
 
+        let img = Arc::new(Mutex::new(self.img.clone()));
+        let progress = Arc::new(Mutex::new(progress));
+
+        let mut rend_lines = vec![];
+
         for j in (0..self.image_height).rev() {
-            for i in 0..self.image_width {
-                let mut pixel_color: Color = Color::new(0.0, 0.0, 0.0);
+            let img = Arc::clone(&img);
+            let progress = Arc::clone(&progress);
+            let world = world.clone();
+            let image_width = self.image_width.clone();
+            let copy = Sensor::new(&self);
+            let rend_line = thread::spawn(move || {
+                for i in 0..image_width {
+                    let mut pixel_color: Color = Color::new(0.0, 0.0, 0.0);
 
-                for _sample in 0..self.samples_per_pixel {
-                    let r = self.get_ray(i, j);
-                    pixel_color += ray_color(r, self.max_depth, &world);
+                    for _sample in 0..copy.samples_per_pixel {
+                        let r = copy.get_ray(i, j);
+                        pixel_color += ray_color(r, copy.max_depth, &world);
+                    }
+                    pixel_color *= copy.pixel_samples_scale;
+
+                    let mut img = img.lock().unwrap();
+                    let pixel = img.get_pixel_mut(i, j);
+                    *pixel = pixel_color.write_color();
+                    drop(img);
+
+                    let progress = progress.lock().unwrap();
+                    progress.inc(1);
                 }
-                pixel_color *= self.pixel_samples_scale;
-
-                let pixel = self.img.get_pixel_mut(i, j);
-                *pixel = pixel_color.write_color();
-            }
-            progress.inc(1);
+            });
+            rend_lines.push(rend_line);
         }
-        progress.finish();
-        &self.img
-    }
 
+        for rend_line in rend_lines {
+            rend_line.join().unwrap();
+        }
+
+        progress.lock().unwrap().finish();
+
+        let img = Some(Arc::try_unwrap(img).unwrap().into_inner().unwrap());
+        self.img = img.as_ref().unwrap().clone();
+    }
+}
+
+struct Sensor {
+    pub samples_per_pixel: u32,
+    pub pixel_samples_scale: f64,
+    pub max_depth: i32,
+    pub pixel100_loc: Point3,
+    pub pixel_delta_u: Vec3,
+    pub pixel_delta_v: Vec3,
+    pub camera_center: Point3,
+}
+
+impl Sensor {
+    pub fn new(camera: &Camera) -> Self {
+        Self {
+            samples_per_pixel: camera.samples_per_pixel.clone(),
+            pixel_samples_scale: camera.pixel_samples_scale.clone(),
+            max_depth: camera.max_depth.clone(),
+            pixel100_loc: camera.pixel100_loc.clone(),
+            pixel_delta_u: camera.pixel_delta_u.clone(),
+            pixel_delta_v: camera.pixel_delta_v.clone(),
+            camera_center: camera.camera_center.clone(),
+        }
+    }
     fn get_ray(&self, i: u32, j: u32) -> Ray {
         let offset = sample_square();
         let pixel_sample = self.pixel100_loc.clone()

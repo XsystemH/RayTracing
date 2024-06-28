@@ -12,8 +12,8 @@ use crate::hittable_list::HittableList;
 use crate::sphere::Sphere;
 use crate::vec3::Point3;
 use console::style;
-use std::rc::Rc;
 use std::{fs::File, process::exit};
+use std::sync::Arc;
 
 fn main() {
     let path = std::path::Path::new("output/book1/image8.jpg");
@@ -22,8 +22,8 @@ fn main() {
 
     // World
     let mut world: HittableList = HittableList::new();
-    world.add(Rc::new(Sphere::new(&Point3::new(0.0, 0.0, -1.0), 0.5)));
-    world.add(Rc::new(Sphere::new(&Point3::new(0.0, -100.5, -1.0), 100.0)));
+    world.add(Arc::new(Sphere::new(&Point3::new(0.0, 0.0, -1.0), 0.5)));
+    world.add(Arc::new(Sphere::new(&Point3::new(0.0, -100.5, -1.0), 100.0)));
 
     let mut camera = Camera::new(16.0 / 9.0, 400, 100, 100, 50, 1.0, 2.0);
     camera.render(world);
