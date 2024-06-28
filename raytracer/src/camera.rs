@@ -16,6 +16,7 @@ pub struct Camera {
     pub quality: u8,
     pub samples_per_pixel: u32,
     pub pixel_samples_scale: f64,
+    pub max_depth: i32,
     pub img: RgbImage,
     // Camera & Viewport
     pub focal_length: f64,
@@ -36,6 +37,7 @@ impl Camera {
         image_width: u32,
         quality: u8,
         samples_per_pixel: u32,
+        max_depth: i32,
         focal_length: f64,
         viewport_height: f64,
     ) -> Self {
@@ -66,6 +68,7 @@ impl Camera {
             quality,
             samples_per_pixel,
             pixel_samples_scale,
+            max_depth,
             img: ImageBuffer::new(image_width, image_height),
             focal_length,
             viewport_height,
@@ -93,7 +96,7 @@ impl Camera {
 
                 for _sample in 0..self.samples_per_pixel {
                     let r = self.get_ray(i, j);
-                    pixel_color += ray_color(r, &world);
+                    pixel_color += ray_color(r, self.max_depth, &world);
                 }
                 pixel_color *= self.pixel_samples_scale;
 
@@ -116,10 +119,14 @@ impl Camera {
     }
 }
 
-fn ray_color(r: Ray, world: &dyn Hittable) -> Color {
+fn ray_color(r: Ray, depth: i32, world: &dyn Hittable) -> Color {
+    if depth < 0 {
+        return Color::black();
+    }
+
     if let Some(hit_record) = world.hit(&r, Interval::new(0.0, f64::INFINITY)) {
         let direction = random_on_hemisphere(&hit_record.normal);
-        return ray_color(Ray::new(&hit_record.p, &direction), world) * 0.5;
+        return ray_color(Ray::new(&hit_record.p, &direction), depth - 1, world) * 0.5;
     }
 
     let unit_direction = unit_vector(&r.direction());
