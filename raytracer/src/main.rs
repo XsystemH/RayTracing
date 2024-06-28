@@ -43,11 +43,11 @@ fn main() {
     // upper left
     let viewport_upper_left: Point3 = camera_center.clone()
         - Vec3::new(0.0, 0.0, focal_length)
-        - viewport_u.clone() / 2.0
-        - viewport_v.clone() / 2.0;
+        - viewport_u / 2.0  // .clone()
+        - viewport_v / 2.0; // .clone()
     let pixel100_loc: Point3 =
-        viewport_upper_left.clone() + (pixel_delta_u.clone() + pixel_delta_v.clone()) * 0.5;
-
+        viewport_upper_left + (pixel_delta_u.clone() + pixel_delta_v.clone()) * 0.5;
+    // viewport_upper_left.clone()
     // Render
 
     let progress = if option_env!("CI").unwrap_or_default() == "true" {

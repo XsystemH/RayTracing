@@ -3,26 +3,26 @@ use crate::vec3::Vec3;
 use std::f64;
 
 pub struct Ray {
-    orig: Point3,
+    _orig: Point3,
     dir: Vec3,
 }
 
 impl Ray {
     pub fn new(origin: &Point3, direction: &Vec3) -> Self {
         Self {
-            orig: origin.clone(),
+            _orig: origin.clone(),
             dir: direction.clone(),
         }
     }
 
     pub fn origin(&self) -> Point3 {
-        self.orig.clone()
+        self._orig.clone()
     }
     pub fn direction(&self) -> Vec3 {
         self.dir.clone()
     }
 
-    pub fn at(&self, t: f64) -> Point3 {
-        self.orig.clone() + self.dir.clone() * t
+    pub fn _at(&self, t: f64) -> Point3 {
+        self._orig.clone() + self.dir.clone() * t
     }
 }
