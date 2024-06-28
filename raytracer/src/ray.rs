@@ -22,7 +22,7 @@ impl Ray {
         self.dir.clone()
     }
 
-    pub fn _at(&self, t: f64) -> Point3 {
+    pub fn at(&self, t: f64) -> Point3 {
         self._orig.clone() + self.dir.clone() * t
     }
 }

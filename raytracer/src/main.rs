@@ -10,21 +10,23 @@ use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
 use std::{fs::File, process::exit};
 
-fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> bool {
+fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> f64 {
     let oc: Vec3 = center.clone() - r.origin();
     let a: f64 = dot(&r.direction(), &r.direction());
     let b: f64 = dot(&r.direction(), &oc) * -2.0;
     let c: f64 = dot(&oc, &oc) - radius * radius;
     let discriminant: f64 = b * b - 4.0 * a * c;
-    if discriminant >= 0.0 {
-        return true;
+    if discriminant < 0.0 {
+        return -1.0;
     }
-    false
+    (-b - f64::sqrt(discriminant)) / (2.0 * a)
 }
 
 fn ray_color(r: Ray) -> Color {
-    if hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, &r) {
-        return Color::new(1.0, 0.0, 0.0);
+    let t: f64 = hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, &r);
+    if t > 0.0 {
+        let n: Vec3 = unit_vector(&(r.at(t) - Vec3::new(0.0, 0.0, -1.0)));
+        return Color::new(n.x() + 1.0, n.y() + 1.0, n.z() + 1.0) * 0.5;
     }
 
     let unit_direction = unit_vector(&r.direction());
@@ -33,7 +35,7 @@ fn ray_color(r: Ray) -> Color {
 }
 
 fn main() {
-    let path = std::path::Path::new("output/book1/image3.jpg");
+    let path = std::path::Path::new("output/book1/image4.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 
