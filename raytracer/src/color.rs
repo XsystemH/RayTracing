@@ -9,4 +9,11 @@ impl Color {
         let b = (self.z() * 255.99) as u8;
         image::Rgb([r, g, b])
     }
+    pub fn white() -> Color {
+        Color {
+            x: 1.0,
+            y: 1.0,
+            z: 1.0,
+        }
+    }
 }

@@ -1,32 +1,25 @@
 mod color;
 mod ray;
 mod vec3;
+mod hittable;
+mod sphere;
+mod hittable_list;
 
 use crate::color::Color;
 use crate::ray::Ray;
-use crate::vec3::{dot, unit_vector, Point3, Vec3};
+use crate::vec3::{unit_vector, Point3, Vec3};
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
 use std::{fs::File, process::exit};
+use std::rc::Rc;
+use crate::hittable::Hittable;
+use crate::hittable_list::HittableList;
+use crate::sphere::Sphere;
 
-fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> f64 {
-    let oc: Vec3 = center.clone() - r.origin();
-    let a: f64 = dot(&r.direction(), &r.direction());
-    let b: f64 = dot(&r.direction(), &oc) * -2.0;
-    let c: f64 = dot(&oc, &oc) - radius * radius;
-    let discriminant: f64 = b * b - 4.0 * a * c;
-    if discriminant < 0.0 {
-        return -1.0;
-    }
-    (-b - f64::sqrt(discriminant)) / (2.0 * a)
-}
-
-fn ray_color(r: Ray) -> Color {
-    let t: f64 = hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, &r);
-    if t > 0.0 {
-        let n: Vec3 = unit_vector(&(r.at(t) - Vec3::new(0.0, 0.0, -1.0)));
-        return Color::new(n.x() + 1.0, n.y() + 1.0, n.z() + 1.0) * 0.5;
+fn ray_color(r: Ray, world: &dyn Hittable) -> Color {
+    if let Some(hit_record) = world.hit(&r, 0.0, f64::INFINITY) {
+        return (hit_record.normal + Color::white()) * 0.5;
     }
 
     let unit_direction = unit_vector(&r.direction());
@@ -35,7 +28,7 @@ fn ray_color(r: Ray) -> Color {
 }
 
 fn main() {
-    let path = std::path::Path::new("output/book1/image4.jpg");
+    let path = std::path::Path::new("output/book1/image5.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 
@@ -46,6 +39,11 @@ fn main() {
     // if image_height < 1 { let image_height: u32 = 1; }
     let quality = 100;
     let mut img: RgbImage = ImageBuffer::new(image_width, image_height);
+
+    // World
+    let mut world: HittableList = HittableList::new();
+    world.add(Rc::new(Sphere::new(&Point3::new(0.0, 0.0, -1.0), 0.5)));
+    world.add(Rc::new(Sphere::new(&Point3::new(0.0, -100.5, -1.0), 100.0)));
 
     // Camera & Viewport
     let focal_length: f64 = 1.0;
@@ -84,7 +82,7 @@ fn main() {
             let ray_direction: Vec3 = pixel_center.clone() - camera_center.clone();
             let r: Ray = Ray::new(&camera_center, &ray_direction);
 
-            let pixel_color: Color = ray_color(r);
+            let pixel_color: Color = ray_color(r, &world);
             *pixel = pixel_color.write_color();
             // *pixel = image::Rgb([r as u8, g as u8, b as u8]);
         }

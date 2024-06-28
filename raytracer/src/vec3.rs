@@ -6,9 +6,9 @@ use std::ops::{
 #[derive(Debug, Clone)]
 
 pub struct Vec3 {
-    x: f64,
-    y: f64,
-    z: f64,
+    pub(crate) x: f64,
+    pub(crate) y: f64,
+    pub(crate) z: f64,
 }
 
 impl Vec3 {
