@@ -12,8 +12,8 @@ use crate::hittable_list::HittableList;
 use crate::sphere::Sphere;
 use crate::vec3::Point3;
 use console::style;
-use std::{fs::File, process::exit};
 use std::sync::Arc;
+use std::{fs::File, process::exit};
 
 fn main() {
     let path = std::path::Path::new("output/book1/image8.jpg");

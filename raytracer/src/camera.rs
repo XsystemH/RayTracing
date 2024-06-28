@@ -1,14 +1,14 @@
-use std::sync::{Arc, Mutex};
-use std::thread;
 use crate::color::Color;
 use crate::hittable::Hittable;
 use crate::hittable_list::HittableList;
 use crate::interval::Interval;
 use crate::ray::Ray;
 use crate::vec3::{random_on_hemisphere, unit_vector, Point3, Vec3};
-use image::{RgbImage}; // ImageBuffer
+use image::RgbImage; // ImageBuffer
 use indicatif::ProgressBar;
 use rand::Rng;
+use std::sync::{Arc, Mutex};
+use std::thread;
 
 #[derive(Clone)]
 pub struct Camera {
