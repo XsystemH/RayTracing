@@ -1,3 +1,4 @@
+use rand::Rng;
 use std::f64;
 use std::ops::{
     Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
@@ -33,6 +34,22 @@ impl Vec3 {
     pub fn length(&self) -> f64 {
         self.length_squared().sqrt()
     }
+    pub fn _random() -> Vec3 {
+        let mut rng = rand::thread_rng();
+        Vec3::new(
+            rng.gen_range(0.0..1.0),
+            rng.gen_range(0.0..1.0),
+            rng.gen_range(0.0..1.0),
+        )
+    }
+    pub fn random_in(min: f64, max: f64) -> Vec3 {
+        let mut rng = rand::thread_rng();
+        Vec3::new(
+            rng.gen_range(min..max),
+            rng.gen_range(min..max),
+            rng.gen_range(min..max),
+        )
+    }
 }
 
 pub fn dot(u: &Vec3, v: &Vec3) -> f64 {
@@ -47,6 +64,25 @@ pub fn _cross(u: &Vec3, v: &Vec3) -> Vec3 {
 }
 pub fn unit_vector(v: &Vec3) -> Vec3 {
     v.clone() / v.length()
+}
+pub fn random_in_unit_sphere() -> Vec3 {
+    loop {
+        let p = Vec3::random_in(-1.0, 1.0);
+        if p.length_squared() < 1.0 {
+            return p;
+        }
+    }
+}
+pub fn random_unit_vector() -> Vec3 {
+    unit_vector(&random_in_unit_sphere())
+}
+pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
+    let on_unit_sphere = random_unit_vector();
+    return if dot(&on_unit_sphere, &normal) > 0.0 {
+        on_unit_sphere
+    } else {
+        -on_unit_sphere
+    };
 }
 
 impl Add for Vec3 {

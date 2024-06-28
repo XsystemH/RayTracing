@@ -12,7 +12,7 @@ impl Color {
         let b = (intensity.clamp(self.z) * 256.0) as u8;
         image::Rgb([r, g, b])
     }
-    pub fn white() -> Color {
+    pub fn _white() -> Color {
         Color {
             x: 1.0,
             y: 1.0,

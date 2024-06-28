@@ -3,7 +3,7 @@ use crate::hittable::Hittable;
 use crate::hittable_list::HittableList;
 use crate::interval::Interval;
 use crate::ray::Ray;
-use crate::vec3::{unit_vector, Point3, Vec3};
+use crate::vec3::{random_on_hemisphere, unit_vector, Point3, Vec3};
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
 use rand::Rng;
@@ -118,7 +118,8 @@ impl Camera {
 
 fn ray_color(r: Ray, world: &dyn Hittable) -> Color {
     if let Some(hit_record) = world.hit(&r, Interval::new(0.0, f64::INFINITY)) {
-        return (hit_record.normal + Color::white()) * 0.5;
+        let direction = random_on_hemisphere(&hit_record.normal);
+        return ray_color(Ray::new(&hit_record.p, &direction), world) * 0.5;
     }
 
     let unit_direction = unit_vector(&r.direction());
