@@ -4,20 +4,36 @@ mod vec3;
 
 use crate::color::Color;
 use crate::ray::Ray;
-use crate::vec3::{unit_vector, Point3, Vec3};
+use crate::vec3::{unit_vector, Point3, Vec3, dot};
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
 use std::{fs::File, process::exit};
 
+fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> bool {
+    let oc: Vec3 = center.clone() - r.origin();
+    let a: f64 = dot(&r.direction(), &r.direction());
+    let b: f64 = dot(&r.direction(), &oc) * -2.0;
+    let c: f64 = dot(&oc, &oc) - radius * radius;
+    let discriminant: f64 = b * b - 4.0 * a * c;
+    if discriminant >= 0.0 {
+        return true;
+    }
+    false
+}
+
 fn ray_color(r: Ray) -> Color {
+    if hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, &r) {
+        return Color::new(1.0, 0.0, 0.0);
+    }
+
     let unit_direction = unit_vector(&r.direction());
     let a = 0.5 * (unit_direction.y() + 1.0);
     Color::new(1.0, 1.0, 1.0) * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a
 }
 
 fn main() {
-    let path = std::path::Path::new("output/book1/image2.jpg");
+    let path = std::path::Path::new("output/book1/image3.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 
