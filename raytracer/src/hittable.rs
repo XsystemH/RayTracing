@@ -19,7 +19,7 @@ impl HitRecord {
         }
         Self {
             p: p.clone(),
-            normal: normal.clone(),
+            normal,
             t,
             front_face,
         }

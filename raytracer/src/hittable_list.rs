@@ -23,7 +23,7 @@ impl Hittable for HittableList {
         let mut rec: Option<HitRecord> = None;
         let mut closest_so_far: f64 = t_max;
         for object in &self.objects {
-            if let Some(tmp_rec) = object.hit(&r, t_min, closest_so_far) {
+            if let Some(tmp_rec) = object.hit(r, t_min, closest_so_far) {
                 closest_so_far = tmp_rec.t;
                 rec = Some(tmp_rec);
             }
