@@ -1,11 +1,11 @@
-use image::{ImageBuffer, RgbImage};
-use indicatif::ProgressBar;
 use crate::color::Color;
 use crate::hittable::Hittable;
 use crate::hittable_list::HittableList;
 use crate::interval::Interval;
 use crate::ray::Ray;
-use crate::vec3::{Point3, unit_vector, Vec3};
+use crate::vec3::{unit_vector, Point3, Vec3};
+use image::{ImageBuffer, RgbImage};
+use indicatif::ProgressBar;
 use rand::Rng;
 
 pub struct Camera {
@@ -13,7 +13,7 @@ pub struct Camera {
     pub aspect_ratio: f64,
     pub image_width: u32,
     pub image_height: u32,
-    pub quality:u8,
+    pub quality: u8,
     pub samples_per_pixel: u32,
     pub pixel_samples_scale: f64,
     pub img: RgbImage,
@@ -31,7 +31,14 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(aspect_ratio: f64, image_width: u32, quality: u8, samples_per_pixel: u32, focal_length: f64, viewport_height: f64) -> Self {
+    pub fn new(
+        aspect_ratio: f64,
+        image_width: u32,
+        quality: u8,
+        samples_per_pixel: u32,
+        focal_length: f64,
+        viewport_height: f64,
+    ) -> Self {
         let mut image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
         if image_height == 0 {
             image_height = 1;

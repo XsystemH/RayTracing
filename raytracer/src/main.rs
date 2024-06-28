@@ -1,19 +1,19 @@
+mod camera;
 mod color;
 mod hittable;
 mod hittable_list;
+mod interval;
 mod ray;
 mod sphere;
 mod vec3;
-mod interval;
-mod camera;
 
+use crate::camera::Camera;
 use crate::hittable_list::HittableList;
 use crate::sphere::Sphere;
 use crate::vec3::Point3;
 use console::style;
 use std::rc::Rc;
 use std::{fs::File, process::exit};
-use crate::camera::Camera;
 
 fn main() {
     let path = std::path::Path::new("output/book1/image6.jpg");
@@ -34,7 +34,10 @@ fn main() {
     );
     let output_image = image::DynamicImage::ImageRgb8(camera.img);
     let mut output_file = File::create(path).unwrap();
-    match output_image.write_to(&mut output_file, image::ImageOutputFormat::Jpeg(camera.quality)) {
+    match output_image.write_to(
+        &mut output_file,
+        image::ImageOutputFormat::Jpeg(camera.quality),
+    ) {
         Ok(_) => {}
         Err(_) => println!("{}", style("Outputting image fails.").red()),
     }
