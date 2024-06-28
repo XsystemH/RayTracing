@@ -39,7 +39,7 @@ fn main() {
     let viewport_v: Vec3 = Vec3::new(0.0, -viewport_height, 0.0);
     // delta vector
     let pixel_delta_u: Vec3 = viewport_u.clone() / image_width as f64;
-    let pixel_delta_v: Vec3 = viewport_v.clone() / image_width as f64;
+    let pixel_delta_v: Vec3 = viewport_v.clone() / image_height as f64;
     // upper left
     let viewport_upper_left: Point3 = camera_center.clone()
         - Vec3::new(0.0, 0.0, focal_length)
