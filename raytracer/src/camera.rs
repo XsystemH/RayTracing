@@ -102,8 +102,8 @@ impl Camera {
             let img = Arc::clone(&img);
             let progress = Arc::clone(&progress);
             let world = world.clone();
-            let image_width = self.image_width.clone();
-            let copy = Sensor::new(&self);
+            let image_width = self.image_width;
+            let copy = Sensor::new(self);
             let rend_line = thread::spawn(move || {
                 for i in 0..image_width {
                     let mut pixel_color: Color = Color::new(0.0, 0.0, 0.0);
@@ -150,9 +150,9 @@ struct Sensor {
 impl Sensor {
     pub fn new(camera: &Camera) -> Self {
         Self {
-            samples_per_pixel: camera.samples_per_pixel.clone(),
-            pixel_samples_scale: camera.pixel_samples_scale.clone(),
-            max_depth: camera.max_depth.clone(),
+            samples_per_pixel: camera.samples_per_pixel,
+            pixel_samples_scale: camera.pixel_samples_scale,
+            max_depth: camera.max_depth,
             pixel100_loc: camera.pixel100_loc.clone(),
             pixel_delta_u: camera.pixel_delta_u.clone(),
             pixel_delta_v: camera.pixel_delta_v.clone(),
