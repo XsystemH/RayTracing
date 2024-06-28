@@ -174,7 +174,7 @@ fn ray_color(r: Ray, depth: i32, world: &dyn Hittable) -> Color {
         return Color::black();
     }
 
-    if let Some(hit_record) = world.hit(&r, Interval::new(0.0, f64::INFINITY)) {
+    if let Some(hit_record) = world.hit(&r, Interval::new(0.001, f64::INFINITY)) {
         let direction = random_on_hemisphere(&hit_record.normal);
         return ray_color(Ray::new(&hit_record.p, &direction), depth - 1, world) * 0.5;
     }
