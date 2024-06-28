@@ -15,7 +15,7 @@ impl Ray {
         }
     }
 
-    pub fn origin(&self) -> Point3 {
+    pub fn _origin(&self) -> Point3 {
         self._orig.clone()
     }
     pub fn direction(&self) -> Vec3 {
