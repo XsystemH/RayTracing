@@ -19,15 +19,15 @@ use std::sync::Arc;
 use std::{fs::File, process::exit};
 
 fn main() {
-    let path = std::path::Path::new("output/book1/image13.jpg");
+    let path = std::path::Path::new("output/book1/image14.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 
     // Materials
     let material_ground = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
     let material_center = Arc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
-    let material_left = Arc::new(Metal::new(Color::new(0.8, 0.8, 0.8)));
-    let material_right = Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2)));
+    let material_left = Arc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.3));
+    let material_right = Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
 
     // World
     let mut world: HittableList = HittableList::new();
