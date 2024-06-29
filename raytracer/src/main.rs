@@ -19,7 +19,7 @@ use std::sync::Arc;
 use std::{fs::File, process::exit};
 
 fn main() {
-    let path = std::path::Path::new("output/book1/image20.jpg");
+    let path = std::path::Path::new("output/book1/image21.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 
@@ -67,7 +67,7 @@ fn main() {
     };
 
     let camera_settings = CameraSettings {
-        vfov: 90.0,
+        vfov: 20.0,
         look_from: Point3::new(-2.0, 2.0, 1.0),
         look_at: Point3::new(0.0, 0.0, -1.0),
         vup: Vec3::new(0.0, 1.0, 0.0),
