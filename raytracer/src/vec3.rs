@@ -59,10 +59,10 @@ impl Vec3 {
 pub fn dot(u: &Vec3, v: &Vec3) -> f64 {
     u.x * v.x + u.y * v.y + u.z * v.z
 }
-pub fn _cross(u: &Vec3, v: &Vec3) -> Vec3 {
+pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
     Vec3 {
         x: u.y * v.z - u.z * v.y,
-        y: u.z * v.x - u.x * v.y,
+        y: u.z * v.x - u.x * v.z,
         z: u.x * v.y - u.y * v.x,
     }
 }
