@@ -10,6 +10,21 @@ use rand::Rng;
 use std::sync::{Arc, Mutex};
 use std::thread;
 
+pub struct ImageSettings {
+    pub aspect_ratio: f64,
+    pub image_width: u32,
+    pub quality: u8,
+    pub samples_per_pixel: u32,
+    pub max_depth: i32,
+}
+
+pub struct CameraSettings {
+    pub vfov: f64,
+    pub look_from: Point3,
+    pub look_at: Point3,
+    pub vup: Vec3,
+}
+
 #[derive(Clone)]
 pub struct Camera {
     // image
@@ -42,17 +57,21 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(
-        aspect_ratio: f64,
-        image_width: u32,
-        quality: u8,
-        samples_per_pixel: u32,
-        max_depth: i32,
-        vfov: f64,
-        look_from: Point3,
-        look_at: Point3,
-        vup: Vec3,
-    ) -> Self {
+    pub fn new(image_settings: ImageSettings, camera_settings: CameraSettings) -> Self {
+        let ImageSettings {
+            aspect_ratio,
+            image_width,
+            quality,
+            samples_per_pixel,
+            max_depth,
+        } = image_settings;
+
+        let CameraSettings {
+            vfov,
+            look_from,
+            look_at,
+            vup,
+        } = camera_settings;
         let mut image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
         if image_height == 0 {
             image_height = 1;

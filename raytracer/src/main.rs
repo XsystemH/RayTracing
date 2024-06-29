@@ -8,7 +8,7 @@ mod ray;
 mod sphere;
 mod vec3;
 
-use crate::camera::Camera;
+use crate::camera::{Camera, CameraSettings, ImageSettings};
 use crate::color::Color;
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, Lambertian, Metal};
@@ -19,7 +19,7 @@ use std::sync::Arc;
 use std::{fs::File, process::exit};
 
 fn main() {
-    let path = std::path::Path::new("output/book1/image21.jpg");
+    let path = std::path::Path::new("output/book1/image20.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 
@@ -58,10 +58,22 @@ fn main() {
         material_right,
     )));
 
-    let look_from = Point3::new(-2.0, 2.0, 1.0);
-    let look_at = Point3::new(0.0, 0.0, -1.0);
-    let vup = Vec3::new(0.0, 1.0, 0.0);
-    let mut camera = Camera::new(16.0 / 9.0, 400, 100, 100, 50, 20.0, look_from, look_at, vup);
+    let image_settings = ImageSettings {
+        aspect_ratio: 16.0 / 9.0,
+        image_width: 400,
+        quality: 100,
+        samples_per_pixel: 50,
+        max_depth: 10,
+    };
+
+    let camera_settings = CameraSettings {
+        vfov: 90.0,
+        look_from: Point3::new(-2.0, 2.0, 1.0),
+        look_at: Point3::new(0.0, 0.0, -1.0),
+        vup: Vec3::new(0.0, 1.0, 0.0),
+    };
+
+    let mut camera = Camera::new(image_settings, camera_settings);
     camera.render(world);
 
     println!(
