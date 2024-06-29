@@ -50,6 +50,10 @@ impl Vec3 {
             rng.gen_range(min..max),
         )
     }
+    pub fn near_zero(&self) -> bool {
+        let s: f64 = 1e-8;
+        self.x.abs() < s && self.y.abs() < s && self.z.abs() < s
+    }
 }
 
 pub fn dot(u: &Vec3, v: &Vec3) -> f64 {
@@ -83,6 +87,9 @@ pub fn _random_on_hemisphere(normal: &Vec3) -> Vec3 {
     } else {
         -on_unit_sphere
     }
+}
+pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
+    v.clone() - n.clone() * 2.0 * dot(v, n)
 }
 
 impl Add for Vec3 {
@@ -133,6 +140,18 @@ impl Mul<f64> for Vec3 {
             x: self.x * rhs,
             y: self.y * rhs,
             z: self.z * rhs,
+        }
+    }
+}
+
+impl Mul<Vec3> for Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, rhs: Vec3) -> Self::Output {
+        Vec3 {
+            x: self.x * rhs.x,
+            y: self.y * rhs.y,
+            z: self.z * rhs.z,
         }
     }
 }
