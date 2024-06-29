@@ -75,7 +75,7 @@ impl Camera {
         let pixel_delta_v: Vec3 = viewport_v.clone() / image_height as f64;
         // upper left
         let viewport_upper_left: Point3 = camera_center.clone()
-            - w * focal_length.clone()
+            - w * focal_length
             - viewport_u.clone() / 2.0
             - viewport_v.clone() / 2.0;
         let pixel100_loc: Point3 =

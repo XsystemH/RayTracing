@@ -61,7 +61,7 @@ fn main() {
     let look_from = Point3::new(-2.0, 2.0, 1.0);
     let look_at = Point3::new(0.0, 0.0, -1.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
-    let mut camera = Camera::new(16.0 / 9.0, 400, 100, 100, 50, 20.0, look_from, look_at, vup);
+    let mut camera = Camera::new(16.0 / 9.0, 400, 100, 100, 50, 90.0, look_from, look_at, vup);
     camera.render(world);
 
     println!(
