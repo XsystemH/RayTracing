@@ -88,6 +88,15 @@ pub fn _random_on_hemisphere(normal: &Vec3) -> Vec3 {
         -on_unit_sphere
     }
 }
+pub fn random_in_unit_disk() -> Vec3 {
+    loop {
+        let mut rng = rand::thread_rng();
+        let p = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
+        if p.length_squared() < 1.0 {
+            return p;
+        }
+    }
+}
 pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
     v.clone() - n.clone() * 2.0 * dot(v, n)
 }

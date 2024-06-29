@@ -3,7 +3,7 @@ use crate::hittable::Hittable;
 use crate::hittable_list::HittableList;
 use crate::interval::Interval;
 use crate::ray::Ray;
-use crate::vec3::{cross, unit_vector, Point3, Vec3};
+use crate::vec3::{cross, random_in_unit_disk, unit_vector, Point3, Vec3};
 use image::RgbImage; // ImageBuffer
 use indicatif::ProgressBar;
 use rand::Rng;
@@ -23,6 +23,8 @@ pub struct CameraSettings {
     pub look_from: Point3,
     pub look_at: Point3,
     pub vup: Vec3,
+    pub defocus_angle: f64,
+    pub focus_dist: f64,
 }
 
 #[derive(Clone)]
@@ -37,7 +39,6 @@ pub struct Camera {
     pub max_depth: i32,
     pub img: RgbImage,
     // Camera
-    pub focal_length: f64,
     pub camera_center: Point3,
     pub vfov: f64,
     pub look_from: Point3,
@@ -45,6 +46,8 @@ pub struct Camera {
     pub vup: Vec3,
     pub theta: f64,
     pub h: f64,
+    pub defocus_angle: f64,
+    pub focus_dist: f64,
     // Viewport
     pub viewport_height: f64,
     pub viewport_width: f64,
@@ -54,6 +57,8 @@ pub struct Camera {
     pub pixel_delta_v: Vec3,
     pub viewport_upper_left: Point3,
     pub pixel100_loc: Point3,
+    pub defocus_disk_u: Vec3,
+    pub defocus_disk_v: Vec3,
 }
 
 impl Camera {
@@ -71,34 +76,40 @@ impl Camera {
             look_from,
             look_at,
             vup,
+            defocus_angle,
+            focus_dist,
         } = camera_settings;
         let mut image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
         if image_height == 0 {
             image_height = 1;
         }
         let camera_center: Point3 = look_from.clone();
-        let focal_length: f64 = (look_from.clone() - look_at.clone()).length();
         let theta: f64 = vfov * std::f64::consts::PI / 180.0;
         let h: f64 = f64::tan(theta / 2.0);
         let pixel_samples_scale: f64 = 1.0 / samples_per_pixel as f64;
-        let viewport_height: f64 = 2.0 * h * focal_length;
+        let viewport_height: f64 = 2.0 * h * focus_dist;
         let viewport_width: f64 = viewport_height * (image_width as f64 / image_height as f64);
         // edge vector
         let w = unit_vector(&(look_from.clone() - look_at.clone()));
         let u = unit_vector(&cross(&vup, &w));
         let v = cross(&w, &u);
-        let viewport_u: Vec3 = u * viewport_width;
-        let viewport_v: Vec3 = v * -viewport_height;
+        let viewport_u: Vec3 = u.clone() * viewport_width;
+        let viewport_v: Vec3 = v.clone() * -viewport_height;
         // delta vector
         let pixel_delta_u: Vec3 = viewport_u.clone() / image_width as f64;
         let pixel_delta_v: Vec3 = viewport_v.clone() / image_height as f64;
         // upper left
         let viewport_upper_left: Point3 = camera_center.clone()
-            - w * focal_length
+            - w * focus_dist
             - viewport_u.clone() / 2.0
             - viewport_v.clone() / 2.0;
         let pixel100_loc: Point3 =
             viewport_upper_left.clone() + (pixel_delta_u.clone() + pixel_delta_v.clone()) * 0.5;
+        // disk vector
+        let defocus_radius =
+            focus_dist * f64::tan(defocus_angle / 2.0 * std::f64::consts::PI / 180.0);
+        let defocus_disk_u = u * defocus_radius;
+        let defocus_disk_v = v * defocus_radius;
         Self {
             aspect_ratio,
             image_width,
@@ -108,7 +119,6 @@ impl Camera {
             pixel_samples_scale,
             max_depth,
             img: RgbImage::new(image_width, image_height),
-            focal_length,
             camera_center,
             look_from,
             look_at,
@@ -116,6 +126,8 @@ impl Camera {
             vfov,
             theta,
             h,
+            defocus_angle,
+            focus_dist,
             viewport_height,
             viewport_width,
             viewport_u,
@@ -124,6 +136,8 @@ impl Camera {
             pixel_delta_v,
             viewport_upper_left,
             pixel100_loc,
+            defocus_disk_u,
+            defocus_disk_v,
         }
     }
 
@@ -186,6 +200,9 @@ struct Sensor {
     pub pixel_delta_u: Vec3,
     pub pixel_delta_v: Vec3,
     pub camera_center: Point3,
+    pub defocus_angle: f64,
+    pub defocus_disk_u: Vec3,
+    pub defocus_disk_v: Vec3,
 }
 
 impl Sensor {
@@ -198,6 +215,9 @@ impl Sensor {
             pixel_delta_u: camera.pixel_delta_u.clone(),
             pixel_delta_v: camera.pixel_delta_v.clone(),
             camera_center: camera.camera_center.clone(),
+            defocus_angle: camera.defocus_angle.clone(),
+            defocus_disk_u: camera.defocus_disk_u.clone(),
+            defocus_disk_v: camera.defocus_disk_v.clone(),
         }
     }
     fn get_ray(&self, i: u32, j: u32) -> Ray {
@@ -205,8 +225,19 @@ impl Sensor {
         let pixel_sample = self.pixel100_loc.clone()
             + (self.pixel_delta_u.clone() * (i as f64 + offset.x))
             + (self.pixel_delta_v.clone() * (j as f64 + offset.y));
-        let ray_direction = pixel_sample - self.camera_center.clone();
-        Ray::new(&self.camera_center, &ray_direction)
+        let ray_origin = if self.defocus_angle <= 0.0 {
+            self.camera_center.clone()
+        } else {
+            self.defocus_disk_sample()
+        };
+        let ray_direction = pixel_sample - ray_origin.clone();
+        Ray::new(&ray_origin, &ray_direction)
+    }
+    fn defocus_disk_sample(&self) -> Point3 {
+        let p = random_in_unit_disk();
+        self.camera_center.clone()
+            + (self.defocus_disk_u.clone() * p.x)
+            + (self.defocus_disk_v.clone() * p.y)
     }
 }
 
