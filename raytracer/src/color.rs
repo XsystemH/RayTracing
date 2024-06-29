@@ -7,9 +7,9 @@ impl Color {
     pub fn write_color(&self) -> image::Rgb<u8> {
         let intensity: Interval = Interval::new(0.000, 0.999);
 
-        let r = (intensity.clamp(self.x) * 256.0) as u8;
-        let g = (intensity.clamp(self.y) * 256.0) as u8;
-        let b = (intensity.clamp(self.z) * 256.0) as u8;
+        let r = (intensity.clamp(linear_to_gamma(self.x)) * 256.0) as u8;
+        let g = (intensity.clamp(linear_to_gamma(self.y)) * 256.0) as u8;
+        let b = (intensity.clamp(linear_to_gamma(self.z)) * 256.0) as u8;
         image::Rgb([r, g, b])
     }
     pub fn _white() -> Color {
@@ -25,5 +25,13 @@ impl Color {
             y: 0.0,
             z: 0.0,
         }
+    }
+}
+
+fn linear_to_gamma(linear: f64) -> f64 {
+    if linear > 0.0 {
+        f64::sqrt(linear)
+    } else {
+        0.0
     }
 }
