@@ -215,7 +215,7 @@ impl Sensor {
             pixel_delta_u: camera.pixel_delta_u.clone(),
             pixel_delta_v: camera.pixel_delta_v.clone(),
             camera_center: camera.camera_center.clone(),
-            defocus_angle: camera.defocus_angle.clone(),
+            defocus_angle: camera.defocus_angle,
             defocus_disk_u: camera.defocus_disk_u.clone(),
             defocus_disk_v: camera.defocus_disk_v.clone(),
         }
