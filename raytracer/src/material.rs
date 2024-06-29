@@ -2,6 +2,7 @@ use crate::color::Color;
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
 use crate::vec3::{dot, random_unit_vector, reflect, refract, unit_vector};
+use rand::Rng;
 
 pub trait Material: Send + Sync {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Ray, Color)>;
@@ -66,6 +67,11 @@ impl Dielectric {
     pub(crate) fn new(refraction_index: f64) -> Self {
         Self { refraction_index }
     }
+    pub fn reflectance(cos: f64, refraction_index: f64) -> f64 {
+        let mut r0 = (1.0 - refraction_index) / (1.0 + refraction_index);
+        r0 *= r0;
+        r0 + (1.0 - r0) * f64::powf(1.0 - cos, 5.0)
+    }
 }
 
 impl Material for Dielectric {
@@ -81,11 +87,13 @@ impl Material for Dielectric {
         let cos_theta = f64::min(dot(&(-unit_direction.clone()), &rec.normal), 1.0);
         let sin_theta = f64::sqrt(1.0 - cos_theta * cos_theta);
 
-        let direction = if ri * sin_theta > 1.0 {
-            reflect(&unit_direction, &rec.normal)
-        } else {
-            refract(&unit_direction, &rec.normal, ri)
-        };
+        let mut rng = rand::thread_rng();
+        let direction =
+            if ri * sin_theta > 1.0 || Self::reflectance(cos_theta, ri) > rng.gen_range(0.0..1.0) {
+                reflect(&unit_direction, &rec.normal)
+            } else {
+                refract(&unit_direction, &rec.normal, ri)
+            };
 
         let scattered = Ray::new(&rec.p, &direction);
         Some((scattered, attenuation))
