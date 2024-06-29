@@ -32,5 +32,5 @@ impl HitRecord {
 }
 
 pub trait Hittable: Send + Sync {
-    fn hit(&self, r: &Ray, rat_t: Interval) -> Option<HitRecord>;
+    fn hit(&self, r: &Ray, rat_t: Interval) -> Option<HitRecord>; // Some(hit_record) None
 }
