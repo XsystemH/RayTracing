@@ -9,6 +9,8 @@ pub struct Sphere {
     center: Point3,
     radius: f64,
     mat: Arc<dyn Material>,
+    is_moving: bool,
+    center_vec: Vec3,
 }
 
 impl Sphere {
@@ -17,13 +19,37 @@ impl Sphere {
             center: center.clone(),
             radius,
             mat,
+            is_moving: false,
+            center_vec: Vec3::new(0.0, 0.0, 0.0),
         }
+    }
+    pub(crate) fn moving(
+        center: &Point3,
+        radius: f64,
+        mat: Arc<dyn Material>,
+        center2: &Vec3,
+    ) -> Self {
+        Self {
+            center: center.clone(),
+            radius,
+            mat,
+            is_moving: true,
+            center_vec: center2.clone() - center.clone(),
+        }
+    }
+    pub(crate) fn sphere_center(&self, time: f64) -> Point3 {
+        self.center.clone() + self.center_vec.clone() * time
     }
 }
 
 impl Hittable for Sphere {
     fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord> {
-        let oc: Vec3 = self.center.clone() - r.origin();
+        let center: Vec3 = if self.is_moving {
+            self.sphere_center(r.time())
+        } else {
+            self.center.clone()
+        };
+        let oc: Vec3 = center - r.origin();
         let a: f64 = r.direction().length_squared();
         let h: f64 = dot(&r.direction(), &oc);
         let c: f64 = oc.length_squared() - self.radius * self.radius;
