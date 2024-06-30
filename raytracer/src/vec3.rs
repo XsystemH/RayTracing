@@ -34,7 +34,7 @@ impl Vec3 {
     pub fn length(&self) -> f64 {
         self.length_squared().sqrt()
     }
-    pub fn _random() -> Vec3 {
+    pub fn random() -> Vec3 {
         let mut rng = rand::thread_rng();
         Vec3::new(
             rng.gen_range(0.0..1.0),
