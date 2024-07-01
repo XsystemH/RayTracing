@@ -20,7 +20,7 @@ use crate::sphere::Sphere;
 use crate::texture::CheckerTexture;
 use crate::vec3::{Point3, Vec3};
 use console::style;
-use rand::{Rng, thread_rng};
+use rand::{thread_rng, Rng};
 use std::sync::Arc;
 use std::{fs::File, process::exit};
 
