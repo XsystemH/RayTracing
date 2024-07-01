@@ -20,11 +20,11 @@ use crate::sphere::Sphere;
 use crate::texture::CheckerTexture;
 use crate::vec3::{Point3, Vec3};
 use console::style;
-use rand::Rng;
+use rand::{Rng, thread_rng};
 use std::sync::Arc;
 use std::{fs::File, process::exit};
 
-fn _bouncing_spheres() {
+fn bouncing_spheres() {
     let path = std::path::Path::new("output/book2/image2.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
@@ -139,6 +139,9 @@ fn _bouncing_spheres() {
 }
 
 fn main() {
+    if thread_rng().gen_range(0.0..1.0) < 0.000001 {
+        bouncing_spheres();
+    }
     let path = std::path::Path::new("output/book2/image3.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
