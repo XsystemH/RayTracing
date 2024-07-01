@@ -103,7 +103,7 @@ fn bouncing_spheres() {
 
     let image_settings = ImageSettings {
         aspect_ratio: 16.0 / 9.0,
-        image_width: 400,
+        image_width: 1200,
         quality: 100,
         samples_per_pixel: 100,
         max_depth: 50,
@@ -139,7 +139,7 @@ fn bouncing_spheres() {
 }
 
 fn main() {
-    if thread_rng().gen_range(0.0..1.0) < 0.000001 {
+    if thread_rng().gen_range(0.0..1.0) < 0.9999999 {
         bouncing_spheres();
     }
     let path = std::path::Path::new("output/book2/image3.jpg");
