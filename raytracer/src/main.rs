@@ -103,7 +103,7 @@ fn bouncing_spheres() {
 
     let image_settings = ImageSettings {
         aspect_ratio: 16.0 / 9.0,
-        image_width: 1200,
+        image_width: 3840,
         quality: 100,
         samples_per_pixel: 100,
         max_depth: 50,

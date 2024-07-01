@@ -148,18 +148,22 @@ impl Camera {
             ProgressBar::new((self.image_height * self.image_width) as u64)
         };
 
-        let img = Arc::new(Mutex::new(self.img.clone()));
+        let lines: Vec<Option<Vec<Color>>> = vec![None; self.image_height as usize];
+        let lines = Arc::new(Mutex::new(lines));
+        // let img = Arc::new(Mutex::new(self.img.clone()));
         let progress = Arc::new(Mutex::new(progress));
 
         let mut rend_lines = vec![];
 
         for j in (0..self.image_height).rev() {
-            let img = Arc::clone(&img);
+            let lines_clone = Arc::clone(&lines);
+            // let img = Arc::clone(&img);
             let progress = Arc::clone(&progress);
             let world = world.clone();
             let image_width = self.image_width;
             let copy = Sensor::new(self);
             let rend_line = thread::spawn(move || {
+                let mut line: Vec<Color> = Vec::with_capacity(image_width as usize);
                 for i in 0..image_width {
                     let mut pixel_color: Color = Color::new(0.0, 0.0, 0.0);
 
@@ -169,14 +173,17 @@ impl Camera {
                     }
                     pixel_color *= copy.pixel_samples_scale;
 
-                    let mut img = img.lock().unwrap();
-                    let pixel = img.get_pixel_mut(i, j);
-                    *pixel = pixel_color.write_color();
-                    drop(img);
+                    // let mut img = img.lock().unwrap();
+                    // let pixel = img.get_pixel_mut(i, j);
+                    // *pixel = pixel_color.write_color();
+                    // drop(img);
+                    line.push(pixel_color);
 
                     let progress = progress.lock().unwrap();
                     progress.inc(1);
                 }
+                let mut lines = lines_clone.lock().unwrap();
+                lines[j as usize] = Some(line);
             });
             rend_lines.push(rend_line);
         }
@@ -187,8 +194,17 @@ impl Camera {
 
         progress.lock().unwrap().finish();
 
-        let img = Some(Arc::try_unwrap(img).unwrap().into_inner().unwrap());
-        self.img = img.as_ref().unwrap().clone();
+        let lines = Arc::try_unwrap(lines).expect("!").into_inner().unwrap();
+        // let img = Some(Arc::try_unwrap(img).unwrap().into_inner().unwrap());
+        // self.img = img.as_ref().unwrap().clone();
+        for (j, line_option) in lines.into_iter().enumerate() {
+            if let Some(line) = line_option {
+                for (i, color) in line.into_iter().enumerate() {
+                    let pixel = self.img.get_pixel_mut(i as u32, j as u32);
+                    *pixel = color.write_color();
+                }
+            }
+        }
     }
 }
 
@@ -263,6 +279,6 @@ fn ray_color(r: Ray, depth: i32, world: &dyn Hittable) -> Color {
 }
 
 fn sample_square() -> Vec3 {
-    let mut rng = rand::thread_rng();
+    let mut rng = thread_rng();
     Vec3::new(rng.gen_range(-0.5..0.5), rng.gen_range(-0.5..0.5), 0.0)
 }
