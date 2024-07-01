@@ -24,7 +24,7 @@ use rand::Rng;
 use std::sync::Arc;
 use std::{fs::File, process::exit};
 
-fn main() {
+fn _bouncing_spheres() {
     let path = std::path::Path::new("output/book2/image2.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
@@ -115,6 +115,67 @@ fn main() {
         look_at: Point3::new(0.0, 0.0, 0.0),
         vup: Vec3::new(0.0, 1.0, 0.0),
         defocus_angle: 0.6,
+        focus_dist: 10.0,
+    };
+
+    let mut camera = Camera::new(image_settings, camera_settings);
+    camera.render(world);
+
+    println!(
+        "Output image as \"{}\"",
+        style(path.to_str().unwrap()).yellow()
+    );
+    let output_image = image::DynamicImage::ImageRgb8(camera.img);
+    let mut output_file = File::create(path).unwrap();
+    match output_image.write_to(
+        &mut output_file,
+        image::ImageOutputFormat::Jpeg(camera.quality),
+    ) {
+        Ok(_) => {}
+        Err(_) => println!("{}", style("Outputting image fails.").red()),
+    }
+
+    exit(0);
+}
+
+fn main() {
+    let path = std::path::Path::new("output/book2/image3.jpg");
+    let prefix = path.parent().unwrap();
+    std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
+
+    let mut world = HittableList::new();
+    let checker = Arc::new(CheckerTexture::new_color(
+        0.32,
+        &Color::new(0.2, 0.3, 0.1),
+        &Color::new(0.9, 0.9, 0.9),
+    ));
+    let material_ground = Arc::new(Lambertian::new_tex(checker));
+    world.add(Arc::new(Sphere::new(
+        &Point3::new(0.0, -10.0, 0.0),
+        10.0,
+        material_ground.clone(),
+    )));
+    world.add(Arc::new(Sphere::new(
+        &Point3::new(0.0, 10.0, 0.0),
+        10.0,
+        material_ground,
+    )));
+    let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
+
+    let image_settings = ImageSettings {
+        aspect_ratio: 16.0 / 9.0,
+        image_width: 400,
+        quality: 100,
+        samples_per_pixel: 100,
+        max_depth: 50,
+    };
+
+    let camera_settings = CameraSettings {
+        vfov: 20.0,
+        look_from: Point3::new(13.0, 2.0, 3.0),
+        look_at: Point3::new(0.0, 0.0, 0.0),
+        vup: Vec3::new(0.0, 1.0, 0.0),
+        defocus_angle: 0.0,
         focus_dist: 10.0,
     };
 

@@ -54,9 +54,9 @@ impl CheckerTexture {
 
 impl Texture for CheckerTexture {
     fn value(&self, u: f64, v: f64, p: Point3) -> Color {
-        let x: i32 = (self.inv_scale * p.x) as i32;
-        let y: i32 = (self.inv_scale * p.y) as i32;
-        let z: i32 = (self.inv_scale * p.z) as i32;
+        let x: i32 = (self.inv_scale * p.x).floor() as i32;
+        let y: i32 = (self.inv_scale * p.y).floor() as i32;
+        let z: i32 = (self.inv_scale * p.z).floor() as i32;
 
         let is_even: bool = (x + y + z) % 2 == 0;
 
