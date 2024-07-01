@@ -35,8 +35,14 @@ impl Sphere {
         center2: &Vec3,
     ) -> Self {
         let r_vec = Vec3::new(radius, radius, radius);
-        let box1 = AABB::two_point(&(center.clone() - r_vec.clone()), &(center.clone() + r_vec.clone()));
-        let box2 = AABB::two_point(&(center2.clone() - r_vec.clone()), &(center2.clone() + r_vec));
+        let box1 = AABB::two_point(
+            &(center.clone() - r_vec.clone()),
+            &(center.clone() + r_vec.clone()),
+        );
+        let box2 = AABB::two_point(
+            &(center2.clone() - r_vec.clone()),
+            &(center2.clone() + r_vec),
+        );
         let bbox = AABB::two_aabb(&box1, &box2);
         Self {
             center: center.clone(),

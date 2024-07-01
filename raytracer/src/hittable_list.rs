@@ -1,8 +1,8 @@
+use crate::aabb::AABB;
 use crate::hittable::{HitRecord, Hittable};
 use crate::interval::Interval;
 use crate::ray::Ray;
 use std::sync::Arc;
-use crate::aabb::AABB;
 
 #[derive(Clone)]
 pub struct HittableList {
@@ -12,7 +12,10 @@ pub struct HittableList {
 
 impl HittableList {
     pub fn new() -> Self {
-        Self { objects: vec![], bbox: AABB::zero() }
+        Self {
+            objects: vec![],
+            bbox: AABB::zero(),
+        }
     }
     pub fn _clear(&mut self) {
         self.objects.clear();

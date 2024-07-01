@@ -88,4 +88,19 @@ impl AABB {
         }
         true
     }
+    pub fn longest_axis(&self) -> usize {
+        if self.x.size() > self.y.size() {
+            if self.x.size() > self.z.size() {
+                0
+            } else {
+                2
+            }
+        } else {
+            if self.y.size() > self.z.size() {
+                1
+            } else {
+                2
+            }
+        }
+    }
 }

@@ -148,7 +148,7 @@ Just do some preparation work, including:
   - An `obj-loader` is needed
   - Polygons are supported (optional)
 - CG-related techniques
-  - Edge detection, normal mapping, interpolation, texture mapping, rasterization, etc.
+  - Edge detection, normal mapping, interpolation, Texture mapping, rasterization, etc.
   - Lens flare, depth of field, axis shift, exposure, etc.
   - Read interesting books(e.g. 《Unity Shader 入门精要》) and implement other fancy features
 - Exploring some [Rust features](./doc/rust-bonus.md)

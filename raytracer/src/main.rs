@@ -1,4 +1,5 @@
 mod aabb;
+mod bvh;
 mod camera;
 mod color;
 mod hittable;
@@ -7,28 +8,34 @@ mod interval;
 mod material;
 mod ray;
 mod sphere;
+mod texture;
 mod vec3;
-mod bvh;
 
+use crate::bvh::BvhNode;
 use crate::camera::{Camera, CameraSettings, ImageSettings};
 use crate::color::Color;
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, Lambertian, Material, Metal};
 use crate::sphere::Sphere;
+use crate::texture::CheckerTexture;
 use crate::vec3::{Point3, Vec3};
 use console::style;
 use rand::Rng;
 use std::sync::Arc;
 use std::{fs::File, process::exit};
-use crate::bvh::BvhNode;
 
 fn main() {
-    let path = std::path::Path::new("output/book2/image1.jpg");
+    let path = std::path::Path::new("output/book2/image2.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 
     // Materials
-    let material_ground = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    let checker = Arc::new(CheckerTexture::new_color(
+        0.32,
+        &Color::new(0.2, 0.3, 0.1),
+        &Color::new(0.9, 0.9, 0.9),
+    ));
+    let material_ground = Arc::new(Lambertian::new_tex(checker));
     let material1 = Arc::new(Dielectric::new(1.5));
     let material2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
     let material3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
@@ -96,7 +103,7 @@ fn main() {
 
     let image_settings = ImageSettings {
         aspect_ratio: 16.0 / 9.0,
-        image_width: 1200,
+        image_width: 400,
         quality: 100,
         samples_per_pixel: 100,
         max_depth: 50,

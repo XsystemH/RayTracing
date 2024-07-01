@@ -17,12 +17,9 @@ impl Interval {
     pub fn two_interval(a: &Interval, b: &Interval) -> Self {
         let min = if a.min <= b.min { a.min } else { b.min };
         let max = if a.max >= b.max { a.max } else { b.max };
-        Self {
-            min,
-            max,
-        }
+        Self { min, max }
     }
-    pub fn _size(&self) -> f64 {
+    pub fn size(&self) -> f64 {
         self.max - self.min
     }
     pub fn _contains(&self, x: f64) -> bool {
