@@ -94,7 +94,7 @@ impl Hittable for BvhNode {
                 Some(hit_left)
             }
         } else {
-            self.right.hit(r, ray_t.clone()).map(|hit_right| hit_right)
+            self.right.hit(r, ray_t)
         }
     }
 
