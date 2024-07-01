@@ -1,3 +1,4 @@
+mod aabb;
 mod camera;
 mod color;
 mod hittable;
@@ -7,6 +8,7 @@ mod material;
 mod ray;
 mod sphere;
 mod vec3;
+mod bvh;
 
 use crate::camera::{Camera, CameraSettings, ImageSettings};
 use crate::color::Color;
@@ -18,6 +20,7 @@ use console::style;
 use rand::Rng;
 use std::sync::Arc;
 use std::{fs::File, process::exit};
+use crate::bvh::BvhNode;
 
 fn main() {
     let path = std::path::Path::new("output/book2/image1.jpg");
@@ -89,9 +92,11 @@ fn main() {
         }
     }
 
+    let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
+
     let image_settings = ImageSettings {
         aspect_ratio: 16.0 / 9.0,
-        image_width: 400,
+        image_width: 1200,
         quality: 100,
         samples_per_pixel: 100,
         max_depth: 50,
