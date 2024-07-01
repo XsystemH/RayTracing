@@ -1,4 +1,4 @@
-use crate::aabb::AABB;
+use crate::aabb::Aabb;
 use crate::interval::Interval;
 use crate::material::Material;
 use crate::ray::Ray;
@@ -34,5 +34,5 @@ impl HitRecord {
 
 pub trait Hittable: Send + Sync {
     fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord>; // Some(hit_record) None
-    fn bounding_box(&self) -> AABB;
+    fn bounding_box(&self) -> Aabb;
 }

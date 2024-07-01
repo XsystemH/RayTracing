@@ -3,13 +3,13 @@ use crate::ray::Ray;
 use crate::vec3::Point3;
 
 #[derive(Clone)]
-pub struct AABB {
+pub struct Aabb {
     pub x: Interval,
     pub y: Interval,
     pub z: Interval,
 }
 
-impl AABB {
+impl Aabb {
     pub fn zero() -> Self {
         Self {
             x: Interval::new(0.0, 0.0),
@@ -38,7 +38,7 @@ impl AABB {
         };
         Self { x, y, z }
     }
-    pub fn two_aabb(box0: &AABB, box1: &AABB) -> Self {
+    pub fn two_aabb(box0: &Aabb, box1: &Aabb) -> Self {
         Self {
             x: Interval::two_interval(&box0.x, &box1.x),
             y: Interval::two_interval(&box0.y, &box1.y),
@@ -95,12 +95,10 @@ impl AABB {
             } else {
                 2
             }
+        } else if self.y.size() > self.z.size() {
+            1
         } else {
-            if self.y.size() > self.z.size() {
-                1
-            } else {
-                2
-            }
+            2
         }
     }
 }

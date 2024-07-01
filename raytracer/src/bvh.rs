@@ -1,4 +1,4 @@
-use crate::aabb::AABB;
+use crate::aabb::Aabb;
 use crate::hittable::{HitRecord, Hittable};
 use crate::hittable_list::HittableList;
 use crate::interval::Interval;
@@ -11,14 +11,14 @@ use std::sync::Arc;
 pub struct BvhNode {
     left: Arc<dyn Hittable>,
     right: Arc<dyn Hittable>,
-    bbox: AABB,
+    bbox: Aabb,
 }
 
 impl BvhNode {
     pub fn new(objects: &mut Vec<Arc<dyn Hittable>>, start: usize, end: usize) -> Self {
-        let mut bbox = AABB::zero();
-        for index in start..end {
-            bbox = AABB::two_aabb(&bbox, &objects[index].bounding_box());
+        let mut bbox = Aabb::zero();
+        for item in objects.iter().take(end).skip(start) {
+            bbox = Aabb::two_aabb(&bbox, &item.bounding_box());
         }
 
         let axis = bbox.longest_axis();
@@ -47,8 +47,8 @@ impl BvhNode {
             let left = BvhNode::new(objects, start, mid);
             let right = BvhNode::new(objects, mid, end);
             Self {
-                left: Arc::new(left.clone()),
-                right: Arc::new(right.clone()),
+                left: Arc::new(left),
+                right: Arc::new(right),
                 bbox,
             }
         }
@@ -83,8 +83,8 @@ impl Hittable for BvhNode {
         if !self.bbox.hit(r, ray_t.clone()) {
             return None;
         };
-        return if let Some(hit_left) = self.left.hit(r, ray_t.clone()) {
-            if let Some(hit_right) = self.right.hit(r, ray_t.clone()) {
+        if let Some(hit_left) = self.left.hit(r, ray_t.clone()) {
+            if let Some(hit_right) = self.right.hit(r, ray_t) {
                 if hit_left.t < hit_right.t {
                     Some(hit_left)
                 } else {
@@ -94,15 +94,11 @@ impl Hittable for BvhNode {
                 Some(hit_left)
             }
         } else {
-            if let Some(hit_right) = self.right.hit(r, ray_t.clone()) {
-                Some(hit_right)
-            } else {
-                None
-            }
-        };
+            self.right.hit(r, ray_t.clone()).map(|hit_right| hit_right)
+        }
     }
 
-    fn bounding_box(&self) -> AABB {
+    fn bounding_box(&self) -> Aabb {
         self.bbox.clone()
     }
 }
