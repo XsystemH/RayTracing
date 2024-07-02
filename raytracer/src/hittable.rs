@@ -18,7 +18,15 @@ pub struct HitRecord {
 }
 
 impl HitRecord {
-    pub fn new(p: &Vec3, t: f64, outward_normal: &Vec3, r: &Ray, mat: Arc<dyn Material>, u: f64, v: f64) -> Self {
+    pub fn new(
+        p: &Vec3,
+        t: f64,
+        outward_normal: &Vec3,
+        r: &Ray,
+        mat: Arc<dyn Material>,
+        u: f64,
+        v: f64,
+    ) -> Self {
         let front_face: bool = vec3::dot(&r.direction(), outward_normal) < 0.0;
         let mut normal: Vec3 = outward_normal.clone();
         if !front_face {

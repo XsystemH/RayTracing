@@ -7,6 +7,7 @@ mod hittable_list;
 mod interval;
 mod material;
 mod ray;
+mod rtw_stb_image;
 mod sphere;
 mod texture;
 mod vec3;
@@ -17,7 +18,7 @@ use crate::color::Color;
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, Lambertian, Material, Metal};
 use crate::sphere::Sphere;
-use crate::texture::CheckerTexture;
+use crate::texture::{CheckerTexture, ImageTexture};
 use crate::vec3::{Point3, Vec3};
 use console::style;
 use rand::{thread_rng, Rng};
@@ -139,29 +140,20 @@ fn bouncing_spheres() {
 }
 
 fn main() {
-    if thread_rng().gen_range(0.0..1.0) < 0.9999999 {
+    if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         bouncing_spheres();
     }
-    let path = std::path::Path::new("output/book2/image3.jpg");
+    let path = std::path::Path::new("output/book2/image5.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 
+    let earth_texture = Arc::new(ImageTexture::new("earthmap.jpg"));
+    let earth_surface = Arc::new(Lambertian::new_tex(earth_texture));
     let mut world = HittableList::new();
-    let checker = Arc::new(CheckerTexture::new_color(
-        0.32,
-        &Color::new(0.2, 0.3, 0.1),
-        &Color::new(0.9, 0.9, 0.9),
-    ));
-    let material_ground = Arc::new(Lambertian::new_tex(checker));
     world.add(Arc::new(Sphere::new(
-        &Point3::new(0.0, -10.0, 0.0),
-        10.0,
-        material_ground.clone(),
-    )));
-    world.add(Arc::new(Sphere::new(
-        &Point3::new(0.0, 10.0, 0.0),
-        10.0,
-        material_ground,
+        &Point3::new(0.0, 0.0, 0.0),
+        2.0,
+        earth_surface.clone(),
     )));
     let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
 
@@ -175,7 +167,7 @@ fn main() {
 
     let camera_settings = CameraSettings {
         vfov: 20.0,
-        look_from: Point3::new(13.0, 2.0, 3.0),
+        look_from: Point3::new(0.0, 0.0, 12.0),
         look_at: Point3::new(0.0, 0.0, 0.0),
         vup: Vec3::new(0.0, 1.0, 0.0),
         defocus_angle: 0.0,
