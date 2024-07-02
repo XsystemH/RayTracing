@@ -39,12 +39,10 @@ impl Perlin {
         Self::permute(&mut p, Self::POINT_COUNT);
         p
     }
-    fn permute(p: &mut Vec<u32>, n: usize) {
+    fn permute(p: &mut[u32], n: usize) {
         for i in (1..n - 1).rev() {
             let target = thread_rng().gen_range(0..i);
-            let tmp = p[i];
-            p[i] = p[target];
-            p[target] = tmp;
+            p.swap(i, target);
         }
     }
 }

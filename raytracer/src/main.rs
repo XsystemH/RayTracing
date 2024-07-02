@@ -215,7 +215,7 @@ fn main() {
     world.add(Arc::new(Sphere::new(
         &Point3::new(0.0, 2.0, 0.0),
         2.0,
-        Arc::new(Lambertian::new_tex(pertext.clone())),
+        Arc::new(Lambertian::new_tex(pertext)),
     )));
     let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
 
