@@ -43,8 +43,7 @@ impl Perlin {
                     *c3 = self.rand_vec[(self.perm_x[((i + di as i32) & 255) as usize]
                         ^ self.perm_y[((j + dj as i32) & 255) as usize]
                         ^ self.perm_z[((k + dk as i32) & 255) as usize])
-                        as usize]
-                        .clone();
+                        as usize];
                 }
             }
         }

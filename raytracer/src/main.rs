@@ -75,7 +75,7 @@ fn bouncing_spheres() {
                 b as f64 + 0.9 * rng.gen_range(0.0..1.0),
             );
 
-            if (center.clone() - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
+            if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
                 let sphere_material: Arc<dyn Material> = if choose_mat < 0.8 {
                     let albedo = Color::random() * Color::random();
                     Arc::new(Lambertian::new(albedo))
@@ -87,7 +87,7 @@ fn bouncing_spheres() {
                     Arc::new(Dielectric::new(1.5))
                 };
                 if choose_mat < 0.8 {
-                    let center2 = center.clone() + Vec3::new(0.0, rng.gen_range(0.0..0.5), 0.0);
+                    let center2 = center + Vec3::new(0.0, rng.gen_range(0.0..0.5), 0.0);
                     world.add(Arc::new(Sphere::moving(
                         &center,
                         0.2,

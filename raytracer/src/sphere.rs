@@ -18,9 +18,9 @@ pub struct Sphere {
 impl Sphere {
     pub(crate) fn new(center: &Point3, radius: f64, mat: Arc<dyn Material>) -> Self {
         let r_vec = Vec3::new(radius, radius, radius);
-        let bbox = Aabb::two_point(&(center.clone() - r_vec.clone()), &(center.clone() + r_vec));
+        let bbox = Aabb::two_point(&(*center - r_vec), &(*center + r_vec));
         Self {
-            center: center.clone(),
+            center: *center,
             radius,
             mat,
             is_moving: false,
@@ -35,26 +35,20 @@ impl Sphere {
         center2: &Vec3,
     ) -> Self {
         let r_vec = Vec3::new(radius, radius, radius);
-        let box1 = Aabb::two_point(
-            &(center.clone() - r_vec.clone()),
-            &(center.clone() + r_vec.clone()),
-        );
-        let box2 = Aabb::two_point(
-            &(center2.clone() - r_vec.clone()),
-            &(center2.clone() + r_vec),
-        );
+        let box1 = Aabb::two_point(&(*center - r_vec), &(*center + r_vec));
+        let box2 = Aabb::two_point(&(*center2 - r_vec), &(*center2 + r_vec));
         let bbox = Aabb::two_aabb(&box1, &box2);
         Self {
-            center: center.clone(),
+            center: *center,
             radius,
             mat,
             is_moving: true,
-            center_vec: center2.clone() - center.clone(),
+            center_vec: *center2 - *center,
             bbox,
         }
     }
     pub(crate) fn sphere_center(&self, time: f64) -> Point3 {
-        self.center.clone() + self.center_vec.clone() * time
+        self.center + self.center_vec * time
     }
 }
 
@@ -63,7 +57,7 @@ impl Hittable for Sphere {
         let center: Vec3 = if self.is_moving {
             self.sphere_center(r.time())
         } else {
-            self.center.clone()
+            self.center
         };
         let oc: Vec3 = center - r.origin();
         let a: f64 = r.direction().length_squared();
@@ -88,7 +82,7 @@ impl Hittable for Sphere {
 
         let t: f64 = root;
         let p: Point3 = r.at(t);
-        let outward_normal: Vec3 = (p.clone() - self.center.clone()) / self.radius;
+        let outward_normal: Vec3 = (p - self.center) / self.radius;
 
         let theta = f64::acos(-outward_normal.y);
         let phi = f64::atan2(-outward_normal.z, outward_normal.x) + std::f64::consts::PI;

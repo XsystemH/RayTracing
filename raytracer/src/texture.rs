@@ -16,9 +16,7 @@ pub struct SolidColor {
 
 impl SolidColor {
     pub fn new(albedo: &Color) -> Self {
-        Self {
-            albedo: albedo.clone(),
-        }
+        Self { albedo: *albedo }
     }
     pub fn _new_rgb(r: f64, g: f64, b: f64) -> Self {
         Self::new(&Color::new(r, g, b))
@@ -27,7 +25,7 @@ impl SolidColor {
 
 impl Texture for SolidColor {
     fn value(&self, _u: f64, _v: f64, _p: Point3) -> Color {
-        self.albedo.clone()
+        self.albedo
     }
 }
 

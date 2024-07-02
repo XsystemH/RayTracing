@@ -11,23 +11,23 @@ pub struct Ray {
 impl Ray {
     pub fn new(origin: &Point3, direction: &Vec3, tm: f64) -> Self {
         Self {
-            _orig: origin.clone(),
-            dir: direction.clone(),
+            _orig: *origin,
+            dir: *direction,
             tm,
         }
     }
 
     pub fn origin(&self) -> Point3 {
-        self._orig.clone()
+        self._orig
     }
     pub fn direction(&self) -> Vec3 {
-        self.dir.clone()
+        self.dir
     }
     pub fn time(&self) -> f64 {
         self.tm
     }
 
     pub fn at(&self, t: f64) -> Point3 {
-        self._orig.clone() + self.dir.clone() * t
+        self._orig + self.dir * t
     }
 }
