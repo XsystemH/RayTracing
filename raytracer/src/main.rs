@@ -153,7 +153,7 @@ fn main() {
     world.add(Arc::new(Sphere::new(
         &Point3::new(0.0, 0.0, 0.0),
         2.0,
-        earth_surface.clone(),
+        earth_surface,
     )));
     let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
 

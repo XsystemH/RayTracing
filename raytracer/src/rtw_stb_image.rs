@@ -48,7 +48,7 @@ impl RTWImage {
     }
 
     fn load(&mut self, filename: &str) -> bool {
-        match image::open(&Path::new(filename)) {
+        match image::open(Path::new(filename)) {
             Ok(img) => {
                 self.image_width = img.width();
                 self.image_height = img.height();
