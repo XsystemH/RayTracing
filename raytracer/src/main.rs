@@ -148,7 +148,7 @@ fn earth() {
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 
-    let earth_texture = Arc::new(ImageTexture::new("brick.jpg"));
+    let earth_texture = Arc::new(ImageTexture::new("zbh.jpg"));
     let earth_surface = Arc::new(Lambertian::new_tex(earth_texture));
     let mut world = HittableList::new();
     world.add(Arc::new(Sphere::new(
@@ -201,7 +201,7 @@ fn main() {
     } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         earth();
     }
-    let path = std::path::Path::new("output/book2/image13.jpg");
+    let path = std::path::Path::new("output/book2/image14.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 

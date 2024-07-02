@@ -6,7 +6,7 @@ use crate::vec3::Point3;
 use std::sync::Arc;
 
 pub trait Texture: Send + Sync {
-    fn value(&self, u: f64, v: f64, p: Point3) -> Color;
+    fn value(&self, u: f64, v: f64, p: &Point3) -> Color;
 }
 
 #[derive(Clone)]
@@ -24,7 +24,7 @@ impl SolidColor {
 }
 
 impl Texture for SolidColor {
-    fn value(&self, _u: f64, _v: f64, _p: Point3) -> Color {
+    fn value(&self, _u: f64, _v: f64, _p: &Point3) -> Color {
         self.albedo
     }
 }
@@ -54,7 +54,7 @@ impl CheckerTexture {
 }
 
 impl Texture for CheckerTexture {
-    fn value(&self, u: f64, v: f64, p: Point3) -> Color {
+    fn value(&self, u: f64, v: f64, p: &Point3) -> Color {
         let x: i32 = (self.inv_scale * p.x).floor() as i32;
         let y: i32 = (self.inv_scale * p.y).floor() as i32;
         let z: i32 = (self.inv_scale * p.z).floor() as i32;
@@ -82,7 +82,7 @@ impl ImageTexture {
 }
 
 impl Texture for ImageTexture {
-    fn value(&self, u: f64, v: f64, _p: Point3) -> Color {
+    fn value(&self, u: f64, v: f64, _p: &Point3) -> Color {
         if self.image.height() == 0 {
             return Color::new(0.0, 1.0, 1.0);
         };
@@ -113,20 +113,20 @@ fn gamma_to_linear(linear: f64) -> f64 {
 
 pub struct NoiseTexture {
     noise: Perlin,
-    scale: f64,
+    _scale: f64,
 }
 
 impl NoiseTexture {
-    pub fn new(scale: f64) -> Self {
+    pub fn new(_scale: f64) -> Self {
         Self {
             noise: Perlin::new(),
-            scale,
+            _scale,
         }
     }
 }
 
 impl Texture for NoiseTexture {
-    fn value(&self, _u: f64, _v: f64, p: Point3) -> Color {
-        Color::white() * 0.5 * (1.0 + self.noise.noise(&(p * self.scale)))
+    fn value(&self, _u: f64, _v: f64, p: &Point3) -> Color {
+        Color::white() * self.noise.turb(p, 7)
     }
 }
