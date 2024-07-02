@@ -6,6 +6,7 @@ mod hittable;
 mod hittable_list;
 mod interval;
 mod material;
+mod perlin;
 mod ray;
 mod rtw_stb_image;
 mod sphere;
@@ -18,7 +19,7 @@ use crate::color::Color;
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, Lambertian, Material, Metal};
 use crate::sphere::Sphere;
-use crate::texture::{CheckerTexture, ImageTexture};
+use crate::texture::{CheckerTexture, ImageTexture, NoiseTexture};
 use crate::vec3::{Point3, Vec3};
 use console::style;
 use rand::{thread_rng, Rng};
@@ -139,7 +140,7 @@ fn bouncing_spheres() {
     exit(0);
 }
 
-fn main() {
+fn earth() {
     if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         bouncing_spheres();
     }
@@ -147,13 +148,74 @@ fn main() {
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 
-    let earth_texture = Arc::new(ImageTexture::new("earthmap.jpg"));
+    let earth_texture = Arc::new(ImageTexture::new("brick.jpg"));
     let earth_surface = Arc::new(Lambertian::new_tex(earth_texture));
     let mut world = HittableList::new();
     world.add(Arc::new(Sphere::new(
         &Point3::new(0.0, 0.0, 0.0),
         2.0,
         earth_surface,
+    )));
+    let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
+
+    let image_settings = ImageSettings {
+        aspect_ratio: 16.0 / 9.0,
+        image_width: 1920,
+        quality: 100,
+        samples_per_pixel: 100,
+        max_depth: 50,
+    };
+
+    let camera_settings = CameraSettings {
+        vfov: 20.0,
+        look_from: Point3::new(0.0, 0.0, 12.0),
+        look_at: Point3::new(0.0, 0.0, 0.0),
+        vup: Vec3::new(0.0, 1.0, 0.0),
+        defocus_angle: 0.0,
+        focus_dist: 10.0,
+    };
+
+    let mut camera = Camera::new(image_settings, camera_settings);
+    camera.render(world);
+
+    println!(
+        "Output image as \"{}\"",
+        style(path.to_str().unwrap()).yellow()
+    );
+    let output_image = image::DynamicImage::ImageRgb8(camera.img);
+    let mut output_file = File::create(path).unwrap();
+    match output_image.write_to(
+        &mut output_file,
+        image::ImageOutputFormat::Jpeg(camera.quality),
+    ) {
+        Ok(_) => {}
+        Err(_) => println!("{}", style("Outputting image fails.").red()),
+    }
+
+    exit(0);
+}
+
+fn main() {
+    if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
+        bouncing_spheres();
+    } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
+        earth();
+    }
+    let path = std::path::Path::new("output/book2/image9.jpg");
+    let prefix = path.parent().unwrap();
+    std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
+
+    let pertext = Arc::new(NoiseTexture::new());
+    let mut world = HittableList::new();
+    world.add(Arc::new(Sphere::new(
+        &Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Arc::new(Lambertian::new_tex(pertext.clone())),
+    )));
+    world.add(Arc::new(Sphere::new(
+        &Point3::new(0.0, 2.0, 0.0),
+        2.0,
+        Arc::new(Lambertian::new_tex(pertext.clone())),
     )));
     let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
 
@@ -167,7 +229,7 @@ fn main() {
 
     let camera_settings = CameraSettings {
         vfov: 20.0,
-        look_from: Point3::new(0.0, 0.0, 12.0),
+        look_from: Point3::new(13.0, 2.0, 3.0),
         look_at: Point3::new(0.0, 0.0, 0.0),
         vup: Vec3::new(0.0, 1.0, 0.0),
         defocus_angle: 0.0,
