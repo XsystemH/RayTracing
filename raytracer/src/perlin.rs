@@ -34,10 +34,10 @@ impl Perlin {
         let k = p.z.floor() as i32;
         let mut c: [[[f64; 2]; 2]; 2] = [[[0.0; 2]; 2]; 2];
 
-        for di in 0..2usize {
-            for dj in 0..2usize {
+        for (di, c1) in c.iter_mut().enumerate() {
+            for (dj, c2) in c1.iter_mut().enumerate() {
                 for dk in 0..2usize {
-                    c[di][dj][dk] = self.rand_float[(self.perm_x[((i + di as i32) & 255) as usize]
+                    c2[dk] = self.rand_float[(self.perm_x[((i + di as i32) & 255) as usize]
                         ^ self.perm_y[((j + dj as i32) & 255) as usize]
                         ^ self.perm_z[((k + dk as i32) & 255) as usize])
                         as usize];
