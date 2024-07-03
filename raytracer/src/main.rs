@@ -19,7 +19,7 @@ use crate::camera::{Camera, CameraSettings, ImageSettings};
 use crate::color::Color;
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Material, Metal};
-use crate::quad::Quad;
+use crate::quad::{cuboid, Quad};
 use crate::sphere::Sphere;
 use crate::texture::{CheckerTexture, ImageTexture, NoiseTexture};
 use crate::vec3::{Point3, Vec3};
@@ -349,50 +349,79 @@ fn main() {
     } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         quads();
     }
-    let path = std::path::Path::new("output/book2/image18.jpg");
+    let path = std::path::Path::new("output/book2/image20.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 
-    let pertext = Arc::new(NoiseTexture::new(4.0));
-    let diffuse = Arc::new(DiffuseLight::new(&Color::new(4.0, 4.0, 4.0)));
+    let diffuse = Arc::new(DiffuseLight::new(&Color::new(15.0, 15.0, 15.0)));
+    let red = Arc::new(Lambertian::new(Color::new(0.65, 0.05, 0.05)));
+    let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
+    let green = Arc::new(Lambertian::new(Color::new(0.12, 0.45, 0.15)));
 
     let mut world = HittableList::new();
-    world.add(Arc::new(Sphere::new(
-        &Point3::new(0.0, -1000.0, 0.0),
-        1000.0,
-        Arc::new(Lambertian::new_tex(pertext.clone())),
-    )));
-    world.add(Arc::new(Sphere::new(
-        &Point3::new(0.0, 2.0, 0.0),
-        2.0,
-        Arc::new(Lambertian::new_tex(pertext)),
+    world.add(Arc::new(Quad::new(
+        &Point3::new(555.0, 0.0, 0.0),
+        &Vec3::new(0.0, 555.0, 0.0),
+        &Vec3::new(0.0, 0.0, 555.0),
+        green,
     )));
     world.add(Arc::new(Quad::new(
-        &Point3::new(3.0, 1.0, -2.0),
-        &Vec3::new(2.0, 0.0, 0.0),
-        &Vec3::new(0.0, 2.0, 0.0),
-        diffuse.clone(),
+        &Point3::new(0.0, 0.0, 0.0),
+        &Vec3::new(2.0, 555.0, 0.0),
+        &Vec3::new(0.0, 0.0, 555.0),
+        red,
     )));
-    world.add(Arc::new(Sphere::new(
-        &Point3::new(0.0, 7.0, 0.0),
-        2.0,
+    world.add(Arc::new(Quad::new(
+        &Point3::new(343.0, 554.0, 332.0),
+        &Vec3::new(-130.0, 0.0, 0.0),
+        &Vec3::new(0.0, 0.0, -105.0),
         diffuse,
     )));
+    world.add(Arc::new(Quad::new(
+        &Point3::new(0.0, 0.0, 0.0),
+        &Vec3::new(555.0, 0.0, 0.0),
+        &Vec3::new(0.0, 0.0, 555.0),
+        white.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        &Point3::new(555.0, 555.0, 555.0),
+        &Vec3::new(-555.0, 0.0, 0.0),
+        &Vec3::new(0.0, 0.0, -555.0),
+        white.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        &Point3::new(0.0, 0.0, 555.0),
+        &Vec3::new(555.0, 0.0, 0.0),
+        &Vec3::new(0.0, 555.0, 0.0),
+        white.clone(),
+    )));
+
+    world.add(cuboid(
+        &Point3::new(130.0, 0.0, 65.0),
+        &Point3::new(295.0, 165.0, 230.0),
+        white.clone(),
+    ));
+    world.add(cuboid(
+        &Point3::new(265.0, 0.0, 295.0),
+        &Point3::new(430.0, 330.0, 460.0),
+        white,
+    ));
+
     let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
 
     let image_settings = ImageSettings {
         aspect_ratio: 16.0 / 9.0,
-        image_width: 400,
+        image_width: 600,
         quality: 100,
-        samples_per_pixel: 100,
+        samples_per_pixel: 200,
         max_depth: 50,
         background: Color::black(),
     };
 
     let camera_settings = CameraSettings {
-        vfov: 20.0,
-        look_from: Point3::new(26.0, 3.0, 6.0),
-        look_at: Point3::new(0.0, 2.0, 0.0),
+        vfov: 40.0,
+        look_from: Point3::new(278.0, 278.0, -900.0),
+        look_at: Point3::new(278.0, 278.0, 0.0),
         vup: Vec3::new(0.0, 1.0, 0.0),
         defocus_angle: 0.0,
         focus_dist: 10.0,
