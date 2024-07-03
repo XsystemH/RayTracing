@@ -18,7 +18,7 @@ use crate::bvh::BvhNode;
 use crate::camera::{Camera, CameraSettings, ImageSettings};
 use crate::color::Color;
 use crate::hittable_list::HittableList;
-use crate::material::{Dielectric, Lambertian, Material, Metal};
+use crate::material::{Dielectric, DiffuseLight, Lambertian, Material, Metal};
 use crate::quad::Quad;
 use crate::sphere::Sphere;
 use crate::texture::{CheckerTexture, ImageTexture, NoiseTexture};
@@ -111,6 +111,7 @@ fn bouncing_spheres() {
         quality: 100,
         samples_per_pixel: 100,
         max_depth: 50,
+        background: Color::new(0.7, 0.8, 1.0),
     };
 
     let camera_settings = CameraSettings {
@@ -166,6 +167,7 @@ fn earth() {
         quality: 100,
         samples_per_pixel: 100,
         max_depth: 50,
+        background: Color::new(0.7, 0.8, 1.0),
     };
 
     let camera_settings = CameraSettings {
@@ -222,6 +224,7 @@ fn perlin() {
         quality: 100,
         samples_per_pixel: 100,
         max_depth: 50,
+        background: Color::new(0.7, 0.8, 1.0),
     };
 
     let camera_settings = CameraSettings {
@@ -253,20 +256,14 @@ fn perlin() {
     exit(0);
 }
 
-fn main() {
-    if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
-        bouncing_spheres();
-    } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
-        earth();
-    } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
-        perlin();
-    }
+fn quads() {
     let path = std::path::Path::new("output/book2/image16.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 
+    let pertext = Arc::new(NoiseTexture::new(4.0));
     let left_red = Arc::new(Lambertian::new(Color::new(1.0, 0.2, 0.2)));
-    let back_green = Arc::new(Lambertian::new(Color::new(0.2, 1.0, 0.2)));
+    let back_green = Arc::new(Lambertian::new_tex(pertext));
     let right_blue = Arc::new(Lambertian::new(Color::new(0.2, 0.2, 1.0)));
     let upper_orange = Arc::new(Lambertian::new(Color::new(1.0, 0.5, 0.0)));
     let lower_teal = Arc::new(Lambertian::new(Color::new(0.2, 0.8, 0.8)));
@@ -310,12 +307,87 @@ fn main() {
         quality: 100,
         samples_per_pixel: 100,
         max_depth: 50,
+        background: Color::new(0.7, 0.8, 1.0),
     };
 
     let camera_settings = CameraSettings {
         vfov: 80.0,
         look_from: Point3::new(0.0, 0.0, 9.0),
         look_at: Point3::new(0.0, 0.0, 0.0),
+        vup: Vec3::new(0.0, 1.0, 0.0),
+        defocus_angle: 0.0,
+        focus_dist: 10.0,
+    };
+
+    let mut camera = Camera::new(image_settings, camera_settings);
+    camera.render(world);
+
+    println!(
+        "Output image as \"{}\"",
+        style(path.to_str().unwrap()).yellow()
+    );
+    let output_image = image::DynamicImage::ImageRgb8(camera.img);
+    let mut output_file = File::create(path).unwrap();
+    match output_image.write_to(
+        &mut output_file,
+        image::ImageOutputFormat::Jpeg(camera.quality),
+    ) {
+        Ok(_) => {}
+        Err(_) => println!("{}", style("Outputting image fails.").red()),
+    }
+
+    exit(0);
+}
+
+fn main() {
+    if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
+        bouncing_spheres();
+    } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
+        earth();
+    } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
+        perlin();
+    } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
+        quads();
+    }
+    let path = std::path::Path::new("output/book2/image17.jpg");
+    let prefix = path.parent().unwrap();
+    std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
+
+    let pertext = Arc::new(NoiseTexture::new(4.0));
+    let diffuse = Arc::new(DiffuseLight::new(&Color::new(4.0, 4.0, 4.0)));
+
+    let mut world = HittableList::new();
+    world.add(Arc::new(Sphere::new(
+        &Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Arc::new(Lambertian::new_tex(pertext.clone())),
+    )));
+    world.add(Arc::new(Sphere::new(
+        &Point3::new(0.0, 2.0, 0.0),
+        2.0,
+        Arc::new(Lambertian::new_tex(pertext)),
+    )));
+    world.add(Arc::new(Quad::new(
+        &Point3::new(3.0, 1.0, -2.0),
+        &Vec3::new(2.0, 0.0, 0.0),
+        &Vec3::new(0.0, 2.0, 0.0),
+        diffuse,
+    )));
+    let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
+
+    let image_settings = ImageSettings {
+        aspect_ratio: 16.0 / 9.0,
+        image_width: 1920,
+        quality: 100,
+        samples_per_pixel: 100,
+        max_depth: 50,
+        background: Color::black(),
+    };
+
+    let camera_settings = CameraSettings {
+        vfov: 20.0,
+        look_from: Point3::new(26.0, 3.0, 6.0),
+        look_at: Point3::new(0.0, 2.0, 0.0),
         vup: Vec3::new(0.0, 1.0, 0.0),
         defocus_angle: 0.0,
         focus_dist: 10.0,

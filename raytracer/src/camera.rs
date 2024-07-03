@@ -16,6 +16,7 @@ pub struct ImageSettings {
     pub quality: u8,
     pub samples_per_pixel: u32,
     pub max_depth: i32,
+    pub background: Color,
 }
 
 pub struct CameraSettings {
@@ -37,6 +38,7 @@ pub struct Camera {
     pub samples_per_pixel: u32,
     pub pixel_samples_scale: f64,
     pub max_depth: i32,
+    pub background: Color,
     pub img: RgbImage,
     // Camera
     pub camera_center: Point3,
@@ -69,6 +71,7 @@ impl Camera {
             quality,
             samples_per_pixel,
             max_depth,
+            background,
         } = image_settings;
 
         let CameraSettings {
@@ -115,6 +118,7 @@ impl Camera {
             samples_per_pixel,
             pixel_samples_scale,
             max_depth,
+            background,
             img: RgbImage::new(image_width, image_height),
             camera_center,
             look_from,
@@ -166,7 +170,7 @@ impl Camera {
 
                     for _sample in 0..copy.samples_per_pixel {
                         let r = copy.get_ray(i, j);
-                        pixel_color += ray_color(r, copy.max_depth, &world);
+                        pixel_color += ray_color(r, copy.max_depth, &world, &copy.background);
                     }
                     pixel_color *= copy.pixel_samples_scale;
 
@@ -209,6 +213,7 @@ struct Sensor {
     pub samples_per_pixel: u32,
     pub pixel_samples_scale: f64,
     pub max_depth: i32,
+    pub background: Color,
     pub pixel100_loc: Point3,
     pub pixel_delta_u: Vec3,
     pub pixel_delta_v: Vec3,
@@ -224,6 +229,7 @@ impl Sensor {
             samples_per_pixel: camera.samples_per_pixel,
             pixel_samples_scale: camera.pixel_samples_scale,
             max_depth: camera.max_depth,
+            background: camera.background,
             pixel100_loc: camera.pixel100_loc,
             pixel_delta_u: camera.pixel_delta_u,
             pixel_delta_v: camera.pixel_delta_v,
@@ -254,23 +260,22 @@ impl Sensor {
     }
 }
 
-fn ray_color(r: Ray, depth: i32, world: &dyn Hittable) -> Color {
+fn ray_color(r: Ray, depth: i32, world: &dyn Hittable, background: &Color) -> Color {
     if depth < 0 {
         return Color::black();
     }
 
     if let Some(hit_record) = world.hit(&r, Interval::new(0.001, f64::INFINITY)) {
-        // let direction = hit_record.normal + random_unit_vector();
-        // return ray_color(Ray::new(&hit_record.p, &direction), depth - 1, world) * 0.5;
         if let Some((scattered, attenuation)) = hit_record.mat.scatter(&r, &hit_record) {
-            return attenuation * ray_color(scattered, depth - 1, world);
+            return attenuation * ray_color(scattered, depth - 1, world, background);
+        } else {
+            return hit_record
+                .mat
+                .emitted(hit_record.u, hit_record.v, &hit_record.p);
         }
-        return Color::black();
     }
 
-    let unit_direction = unit_vector(&r.direction());
-    let a = 0.5 * (unit_direction._y() + 1.0);
-    Color::new(1.0, 1.0, 1.0) * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a
+    *background
 }
 
 fn sample_square() -> Vec3 {
