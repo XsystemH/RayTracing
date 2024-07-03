@@ -18,7 +18,9 @@ impl Aabb {
         }
     }
     pub fn _new(x: Interval, y: Interval, z: Interval) -> Self {
-        Self { x, y, z }
+        let mut aabb = Self { x, y, z };
+        aabb.pad_to_minimums();
+        aabb
     }
     pub fn two_point(a: &Point3, b: &Point3) -> Self {
         let x = if a.x <= b.x {
@@ -36,7 +38,9 @@ impl Aabb {
         } else {
             Interval::new(b.z, a.z)
         };
-        Self { x, y, z }
+        let mut aabb = Self { x, y, z };
+        aabb.pad_to_minimums();
+        aabb
     }
     pub fn two_aabb(box0: &Aabb, box1: &Aabb) -> Self {
         Self {
@@ -99,6 +103,18 @@ impl Aabb {
             1
         } else {
             2
+        }
+    }
+    fn pad_to_minimums(&mut self) {
+        let delta = 0.0001;
+        if self.x.size() < delta {
+            self.x = self.x.expand(delta);
+        }
+        if self.y.size() < delta {
+            self.y = self.y.expand(delta);
+        }
+        if self.z.size() < delta {
+            self.z = self.z.expand(delta);
         }
     }
 }

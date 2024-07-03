@@ -7,6 +7,7 @@ mod hittable_list;
 mod interval;
 mod material;
 mod perlin;
+mod quad;
 mod ray;
 mod rtw_stb_image;
 mod sphere;
@@ -18,6 +19,7 @@ use crate::camera::{Camera, CameraSettings, ImageSettings};
 use crate::color::Color;
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, Lambertian, Material, Metal};
+use crate::quad::Quad;
 use crate::sphere::Sphere;
 use crate::texture::{CheckerTexture, ImageTexture, NoiseTexture};
 use crate::vec3::{Point3, Vec3};
@@ -65,7 +67,7 @@ fn bouncing_spheres() {
         material3,
     )));
 
-    let mut rng = rand::thread_rng();
+    let mut rng = thread_rng();
     for a in -11..11 {
         for b in -11..11 {
             let choose_mat = rng.gen_range(0.0..1.0);
@@ -195,12 +197,7 @@ fn earth() {
     exit(0);
 }
 
-fn main() {
-    if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
-        bouncing_spheres();
-    } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
-        earth();
-    }
+fn perlin() {
     let path = std::path::Path::new("output/book2/image15.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
@@ -230,6 +227,94 @@ fn main() {
     let camera_settings = CameraSettings {
         vfov: 20.0,
         look_from: Point3::new(13.0, 2.0, 3.0),
+        look_at: Point3::new(0.0, 0.0, 0.0),
+        vup: Vec3::new(0.0, 1.0, 0.0),
+        defocus_angle: 0.0,
+        focus_dist: 10.0,
+    };
+
+    let mut camera = Camera::new(image_settings, camera_settings);
+    camera.render(world);
+
+    println!(
+        "Output image as \"{}\"",
+        style(path.to_str().unwrap()).yellow()
+    );
+    let output_image = image::DynamicImage::ImageRgb8(camera.img);
+    let mut output_file = File::create(path).unwrap();
+    match output_image.write_to(
+        &mut output_file,
+        image::ImageOutputFormat::Jpeg(camera.quality),
+    ) {
+        Ok(_) => {}
+        Err(_) => println!("{}", style("Outputting image fails.").red()),
+    }
+
+    exit(0);
+}
+
+fn main() {
+    if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
+        bouncing_spheres();
+    } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
+        earth();
+    } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
+        perlin();
+    }
+    let path = std::path::Path::new("output/book2/image16.jpg");
+    let prefix = path.parent().unwrap();
+    std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
+
+    let left_red = Arc::new(Lambertian::new(Color::new(1.0, 0.2, 0.2)));
+    let back_green = Arc::new(Lambertian::new(Color::new(0.2, 1.0, 0.2)));
+    let right_blue = Arc::new(Lambertian::new(Color::new(0.2, 0.2, 1.0)));
+    let upper_orange = Arc::new(Lambertian::new(Color::new(1.0, 0.5, 0.0)));
+    let lower_teal = Arc::new(Lambertian::new(Color::new(0.2, 0.8, 0.8)));
+
+    let mut world = HittableList::new();
+    world.add(Arc::new(Quad::new(
+        &Point3::new(-3.0, -2.0, 5.0),
+        &Vec3::new(0.0, 0.0, -4.0),
+        &Vec3::new(0.0, 4.0, 0.0),
+        left_red,
+    )));
+    world.add(Arc::new(Quad::new(
+        &Point3::new(-2.0, -2.0, 0.0),
+        &Vec3::new(4.0, 0.0, 0.0),
+        &Vec3::new(0.0, 4.0, 0.0),
+        back_green,
+    )));
+    world.add(Arc::new(Quad::new(
+        &Point3::new(3.0, -2.0, 1.0),
+        &Vec3::new(0.0, 0.0, 4.0),
+        &Vec3::new(0.0, 4.0, 0.0),
+        right_blue,
+    )));
+    world.add(Arc::new(Quad::new(
+        &Point3::new(-2.0, 3.0, 1.0),
+        &Vec3::new(4.0, 0.0, 0.0),
+        &Vec3::new(0.0, 0.0, 4.0),
+        upper_orange,
+    )));
+    world.add(Arc::new(Quad::new(
+        &Point3::new(-2.0, -3.0, 5.0),
+        &Vec3::new(4.0, 0.0, 0.0),
+        &Vec3::new(0.0, 0.0, -4.0),
+        lower_teal,
+    )));
+    let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
+
+    let image_settings = ImageSettings {
+        aspect_ratio: 1.0,
+        image_width: 400,
+        quality: 100,
+        samples_per_pixel: 100,
+        max_depth: 50,
+    };
+
+    let camera_settings = CameraSettings {
+        vfov: 80.0,
+        look_from: Point3::new(0.0, 0.0, 9.0),
         look_at: Point3::new(0.0, 0.0, 0.0),
         vup: Vec3::new(0.0, 1.0, 0.0),
         defocus_angle: 0.0,
