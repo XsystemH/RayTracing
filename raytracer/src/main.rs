@@ -581,7 +581,7 @@ fn main() {
         aspect_ratio: 1.0,
         image_width: 800,
         quality: 100,
-        samples_per_pixel: 10000,
+        samples_per_pixel: 5000,
         max_depth: 40,
         background: Color::black(),
     };
