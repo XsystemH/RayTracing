@@ -1,6 +1,6 @@
 use crate::interval::Interval;
 use crate::ray::Ray;
-use crate::vec3::Point3;
+use crate::vec3::{Point3, Vec3};
 
 #[derive(Clone)]
 pub struct Aabb {
@@ -17,7 +17,7 @@ impl Aabb {
             z: Interval::new(0.0, 0.0),
         }
     }
-    pub fn _new(x: Interval, y: Interval, z: Interval) -> Self {
+    pub fn new(x: Interval, y: Interval, z: Interval) -> Self {
         let mut aabb = Self { x, y, z };
         aabb.pad_to_minimums();
         aabb
@@ -117,4 +117,12 @@ impl Aabb {
             self.z = self.z.expand(delta);
         }
     }
+}
+
+pub fn add(bbox: &Aabb, offset: &Vec3) -> Aabb {
+    Aabb::new(
+        Interval::new(bbox.x.min + offset.x, bbox.x.max + offset.x),
+        Interval::new(bbox.y.min + offset.y, bbox.y.max + offset.y),
+        Interval::new(bbox.z.min + offset.z, bbox.z.max + offset.z),
+    )
 }

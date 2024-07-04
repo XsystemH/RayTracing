@@ -12,6 +12,7 @@ mod ray;
 mod rtw_stb_image;
 mod sphere;
 mod texture;
+mod translate;
 mod vec3;
 
 use crate::bvh::BvhNode;
@@ -22,6 +23,7 @@ use crate::material::{Dielectric, DiffuseLight, Lambertian, Material, Metal};
 use crate::quad::{cuboid, Quad};
 use crate::sphere::Sphere;
 use crate::texture::{CheckerTexture, ImageTexture, NoiseTexture};
+use crate::translate::{RotateY, Translate};
 use crate::vec3::{Point3, Vec3};
 use console::style;
 use rand::{thread_rng, Rng};
@@ -349,7 +351,7 @@ fn main() {
     } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         quads();
     }
-    let path = std::path::Path::new("output/book2/image20.jpg");
+    let path = std::path::Path::new("output/book2/image21.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 
@@ -396,21 +398,28 @@ fn main() {
         white.clone(),
     )));
 
-    world.add(cuboid(
-        &Point3::new(130.0, 0.0, 65.0),
-        &Point3::new(295.0, 165.0, 230.0),
+    let box1 = cuboid(
+        &Point3::new(0.0, 0.0, 0.0),
+        &Point3::new(165.0, 330.0, 165.0),
         white.clone(),
-    ));
-    world.add(cuboid(
-        &Point3::new(265.0, 0.0, 295.0),
-        &Point3::new(430.0, 330.0, 460.0),
+    );
+    let box1 = Arc::new(RotateY::new(box1, 15.0));
+    let box1 = Arc::new(Translate::new(box1, &Vec3::new(265.0, 0.0, 295.0)));
+    world.add(box1);
+
+    let box2 = cuboid(
+        &Point3::new(0.0, 0.0, 0.0),
+        &Point3::new(165.0, 165.0, 165.0),
         white,
-    ));
+    );
+    let box2 = Arc::new(RotateY::new(box2, -18.0));
+    let box2 = Arc::new(Translate::new(box2, &Vec3::new(130.0, 0.0, 65.0)));
+    world.add(box2);
 
     let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
 
     let image_settings = ImageSettings {
-        aspect_ratio: 16.0 / 9.0,
+        aspect_ratio: 1.0,
         image_width: 600,
         quality: 100,
         samples_per_pixel: 200,
