@@ -46,7 +46,7 @@ impl Interval {
     pub fn _empty() -> Self {
         Interval::new(f64::INFINITY, -f64::INFINITY)
     }
-    pub fn universe() -> Self {
+    pub fn _universe() -> Self {
         Interval::new(-f64::INFINITY, f64::INFINITY)
     }
 }

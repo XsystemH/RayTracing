@@ -6,7 +6,6 @@ mod hittable;
 mod hittable_list;
 mod interval;
 mod material;
-mod medium;
 mod perlin;
 mod quad;
 mod ray;
@@ -21,7 +20,6 @@ use crate::camera::{Camera, CameraSettings, ImageSettings};
 use crate::color::Color;
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Material, Metal};
-use crate::medium::ConstantMedium;
 use crate::quad::{cuboid, Quad};
 use crate::sphere::Sphere;
 use crate::texture::{CheckerTexture, ImageTexture, NoiseTexture};
@@ -353,11 +351,11 @@ fn main() {
     } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         quads();
     }
-    let path = std::path::Path::new("output/book2/image22.jpg");
+    let path = std::path::Path::new("output/book2/image21.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 
-    let diffuse = Arc::new(DiffuseLight::new(&Color::new(7.0, 7.0, 7.0)));
+    let diffuse = Arc::new(DiffuseLight::new(&Color::new(15.0, 15.0, 15.0)));
     let red = Arc::new(Lambertian::new(Color::new(0.65, 0.05, 0.05)));
     let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
     let green = Arc::new(Lambertian::new(Color::new(0.12, 0.45, 0.15)));
@@ -376,9 +374,9 @@ fn main() {
         red,
     )));
     world.add(Arc::new(Quad::new(
-        &Point3::new(113.0, 554.0, 127.0),
-        &Vec3::new(330.0, 0.0, 0.0),
-        &Vec3::new(0.0, 0.0, 305.0),
+        &Point3::new(343.0, 554.0, 332.0),
+        &Vec3::new(-130.0, 0.0, 0.0),
+        &Vec3::new(0.0, 0.0, -105.0),
         diffuse,
     )));
     world.add(Arc::new(Quad::new(
@@ -407,7 +405,7 @@ fn main() {
     );
     let box1 = Arc::new(RotateY::new(box1, 15.0));
     let box1 = Arc::new(Translate::new(box1, &Vec3::new(265.0, 0.0, 295.0)));
-    world.add(Arc::new(ConstantMedium::new(box1, 0.01, &Color::black())));
+    world.add(box1);
 
     let box2 = cuboid(
         &Point3::new(0.0, 0.0, 0.0),
@@ -416,7 +414,7 @@ fn main() {
     );
     let box2 = Arc::new(RotateY::new(box2, -18.0));
     let box2 = Arc::new(Translate::new(box2, &Vec3::new(130.0, 0.0, 65.0)));
-    world.add(Arc::new(ConstantMedium::new(box2, 0.01, &Color::white())));
+    world.add(box2);
 
     let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
 
