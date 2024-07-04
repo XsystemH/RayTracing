@@ -482,7 +482,7 @@ fn main() {
             boxes1.add(cuboid(
                 &Point3::new(x0, y0, z0),
                 &Point3::new(x1, y1, z1),
-                ground.clone()
+                ground.clone(),
             ));
         }
     }
