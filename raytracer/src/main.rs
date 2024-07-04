@@ -479,7 +479,11 @@ fn main() {
             let y1 = thread_rng().gen_range(1.0..101.0);
             let z1 = z0 + w;
 
-            boxes1.add(cuboid(&Point3::new(x0, y0, z0), &Point3::new(x1, y1, z1), ground.clone()));
+            boxes1.add(cuboid(
+                &Point3::new(x0, y0, z0),
+                &Point3::new(x1, y1, z1),
+                ground.clone()
+            ));
         }
     }
 
@@ -491,13 +495,18 @@ fn main() {
         &Point3::new(123.0, 554.0, 147.0),
         &Vec3::new(300.0, 0.0, 0.0),
         &Vec3::new(0.0, 0.0, 265.0),
-        light
+        light,
     )));
 
     let center1 = Point3::new(400.0, 400.0, 200.0);
     let center2 = center1 + Vec3::new(30.0, 0.0, 0.0);
     let sphere_material = Arc::new(Lambertian::new(Color::new(0.7, 0.3, 0.1)));
-    world.add(Arc::new(Sphere::moving(&center1, 50.0, sphere_material, &center2)));
+    world.add(Arc::new(Sphere::moving(
+        &center1,
+        50.0,
+        sphere_material,
+        &center2,
+    )));
 
     world.add(Arc::new(Sphere::new(
         &Point3::new(260.0, 150.0, 45.0),
@@ -511,17 +520,30 @@ fn main() {
     )));
 
     let mut boundary = Arc::new(Sphere::new(
-        &Point3::new(360.0, 150.0, 145.0), 70.0, Arc::new(Dielectric::new(1.5))));
+        &Point3::new(360.0, 150.0, 145.0),
+        70.0,
+        Arc::new(Dielectric::new(1.5)),
+    ));
     world.add(boundary.clone());
-    world.add(Arc::new(ConstantMedium::new(boundary, 0.2, &Color::new(0.2, 0.4, 0.9))));
+    world.add(Arc::new(ConstantMedium::new(
+        boundary,
+        0.2,
+        &Color::new(0.2, 0.4, 0.9),
+    )));
     boundary = Arc::new(Sphere::new(
         &Point3::new(0.0, 0.0, 0.0),
         5000.0,
         Arc::new(Dielectric::new(1.5)),
     ));
-    world.add(Arc::new(ConstantMedium::new(boundary, 0.0001, &Color::white())));
+    world.add(Arc::new(ConstantMedium::new(
+        boundary,
+        0.0001,
+        &Color::white(),
+    )));
 
-    let e_mat = Arc::new(Lambertian::new_tex(Arc::new(ImageTexture::new("earthmap.jpg"))));
+    let e_mat = Arc::new(Lambertian::new_tex(Arc::new(ImageTexture::new(
+        "earthmap.jpg",
+    ))));
     world.add(Arc::new(Sphere::new(
         &Point3::new(400.0, 200.0, 400.0),
         100.0,
@@ -547,7 +569,8 @@ fn main() {
 
     world.add(Arc::new(Translate::new(
         Arc::new(RotateY::new(
-            Arc::new(BvhNode::from_list(&mut boxes2)), 15.0,
+            Arc::new(BvhNode::from_list(&mut boxes2)),
+            15.0,
         )),
         &Vec3::new(-100.0, 270.0, 395.0),
     )));
