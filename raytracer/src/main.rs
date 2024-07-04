@@ -6,6 +6,7 @@ mod hittable;
 mod hittable_list;
 mod interval;
 mod material;
+mod medium;
 mod perlin;
 mod quad;
 mod ray;
@@ -20,6 +21,7 @@ use crate::camera::{Camera, CameraSettings, ImageSettings};
 use crate::color::Color;
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Material, Metal};
+use crate::medium::ConstantMedium;
 use crate::quad::{cuboid, Quad};
 use crate::sphere::Sphere;
 use crate::texture::{CheckerTexture, ImageTexture, NoiseTexture};
@@ -341,112 +343,6 @@ fn quads() {
     exit(0);
 }
 
-fn cornell_box() {
-    let path = std::path::Path::new("output/book2/image22.jpg");
-    let prefix = path.parent().unwrap();
-    std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
-
-    let diffuse = Arc::new(DiffuseLight::new(&Color::new(15.0, 15.0, 15.0)));
-    let red = Arc::new(Lambertian::new(Color::new(0.65, 0.05, 0.05)));
-    let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
-    let green = Arc::new(Lambertian::new(Color::new(0.12, 0.45, 0.15)));
-
-    let mut world = HittableList::new();
-    world.add(Arc::new(Quad::new(
-        &Point3::new(555.0, 0.0, 0.0),
-        &Vec3::new(0.0, 555.0, 0.0),
-        &Vec3::new(0.0, 0.0, 555.0),
-        green,
-    )));
-    world.add(Arc::new(Quad::new(
-        &Point3::new(0.0, 0.0, 0.0),
-        &Vec3::new(2.0, 555.0, 0.0),
-        &Vec3::new(0.0, 0.0, 555.0),
-        red,
-    )));
-    world.add(Arc::new(Quad::new(
-        &Point3::new(343.0, 554.0, 332.0),
-        &Vec3::new(-130.0, 0.0, 0.0),
-        &Vec3::new(0.0, 0.0, -105.0),
-        diffuse,
-    )));
-    world.add(Arc::new(Quad::new(
-        &Point3::new(0.0, 0.0, 0.0),
-        &Vec3::new(555.0, 0.0, 0.0),
-        &Vec3::new(0.0, 0.0, 555.0),
-        white.clone(),
-    )));
-    world.add(Arc::new(Quad::new(
-        &Point3::new(555.0, 555.0, 555.0),
-        &Vec3::new(-555.0, 0.0, 0.0),
-        &Vec3::new(0.0, 0.0, -555.0),
-        white.clone(),
-    )));
-    world.add(Arc::new(Quad::new(
-        &Point3::new(0.0, 0.0, 555.0),
-        &Vec3::new(555.0, 0.0, 0.0),
-        &Vec3::new(0.0, 555.0, 0.0),
-        white.clone(),
-    )));
-
-    let box1 = cuboid(
-        &Point3::new(0.0, 0.0, 0.0),
-        &Point3::new(165.0, 330.0, 165.0),
-        white.clone(),
-    );
-    let box1 = Arc::new(RotateY::new(box1, 15.0));
-    let box1 = Arc::new(Translate::new(box1, &Vec3::new(265.0, 0.0, 295.0)));
-    world.add(box1);
-
-    let box2 = cuboid(
-        &Point3::new(0.0, 0.0, 0.0),
-        &Point3::new(165.0, 165.0, 165.0),
-        white,
-    );
-    let box2 = Arc::new(RotateY::new(box2, -18.0));
-    let box2 = Arc::new(Translate::new(box2, &Vec3::new(130.0, 0.0, 65.0)));
-    world.add(box2);
-
-    let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
-
-    let image_settings = ImageSettings {
-        aspect_ratio: 1.0,
-        image_width: 600,
-        quality: 100,
-        samples_per_pixel: 200,
-        max_depth: 50,
-        background: Color::black(),
-    };
-
-    let camera_settings = CameraSettings {
-        vfov: 40.0,
-        look_from: Point3::new(278.0, 278.0, -900.0),
-        look_at: Point3::new(278.0, 278.0, 0.0),
-        vup: Vec3::new(0.0, 1.0, 0.0),
-        defocus_angle: 0.0,
-        focus_dist: 10.0,
-    };
-
-    let mut camera = Camera::new(image_settings, camera_settings);
-    camera.render(world);
-
-    println!(
-        "Output image as \"{}\"",
-        style(path.to_str().unwrap()).yellow()
-    );
-    let output_image = image::DynamicImage::ImageRgb8(camera.img);
-    let mut output_file = File::create(path).unwrap();
-    match output_image.write_to(
-        &mut output_file,
-        image::ImageOutputFormat::Jpeg(camera.quality),
-    ) {
-        Ok(_) => {}
-        Err(_) => println!("{}", style("Outputting image fails.").red()),
-    }
-
-    exit(0);
-}
-
 fn main() {
     if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         bouncing_spheres();
@@ -456,14 +352,12 @@ fn main() {
         perlin();
     } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         quads();
-    } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
-        cornell_box();
     }
     let path = std::path::Path::new("output/book2/image22.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 
-    let diffuse = Arc::new(DiffuseLight::new(&Color::new(15.0, 15.0, 15.0)));
+    let diffuse = Arc::new(DiffuseLight::new(&Color::new(7.0, 7.0, 7.0)));
     let red = Arc::new(Lambertian::new(Color::new(0.65, 0.05, 0.05)));
     let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
     let green = Arc::new(Lambertian::new(Color::new(0.12, 0.45, 0.15)));
@@ -482,9 +376,9 @@ fn main() {
         red,
     )));
     world.add(Arc::new(Quad::new(
-        &Point3::new(343.0, 554.0, 332.0),
-        &Vec3::new(-130.0, 0.0, 0.0),
-        &Vec3::new(0.0, 0.0, -105.0),
+        &Point3::new(113.0, 554.0, 127.0),
+        &Vec3::new(330.0, 0.0, 0.0),
+        &Vec3::new(0.0, 0.0, 305.0),
         diffuse,
     )));
     world.add(Arc::new(Quad::new(
@@ -513,7 +407,7 @@ fn main() {
     );
     let box1 = Arc::new(RotateY::new(box1, 15.0));
     let box1 = Arc::new(Translate::new(box1, &Vec3::new(265.0, 0.0, 295.0)));
-    world.add(box1);
+    world.add(Arc::new(ConstantMedium::new(box1, 0.01, &Color::black())));
 
     let box2 = cuboid(
         &Point3::new(0.0, 0.0, 0.0),
@@ -522,7 +416,7 @@ fn main() {
     );
     let box2 = Arc::new(RotateY::new(box2, -18.0));
     let box2 = Arc::new(Translate::new(box2, &Vec3::new(130.0, 0.0, 65.0)));
-    world.add(box2);
+    world.add(Arc::new(ConstantMedium::new(box2, 0.01, &Color::white())));
 
     let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
 
@@ -563,3 +457,109 @@ fn main() {
 
     exit(0);
 }
+
+// fn main() {
+//     if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
+//         bouncing_spheres();
+//     } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
+//         earth();
+//     } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
+//         perlin();
+//     } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
+//         quads();
+//     } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
+//         cornell_box();
+//     }
+//     let path = std::path::Path::new("output/book2/image22.jpg");
+//     let prefix = path.parent().unwrap();
+//     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
+//
+//     let mut boxes1 = HittableList::new();
+//     let ground = Arc::new(Lambertian::new(Color::new(0.48, 0.83, 0.53)));
+//
+//     let boxes_per_sides = 20;
+//     for i in 0..boxes_per_sides {
+//         for j in 0..boxes_per_sides {
+//             let w = 100.0;
+//             let x0 = -1000.0 + i as f64 * w;
+//             let y0 = 0.0;
+//             let z0 = -1000.0 + j as f64 * w;
+//             let x1 = x0 + w;
+//             let y1 = thread_rng().gen_range(1.0..101.0);
+//             let z1 = z0 + w;
+//
+//             boxes1.add(cuboid(&Point3::new(x0, y0, z0), &Point3::new(x1, y1, z1), ground.clone()));
+//         }
+//     }
+//
+//     let mut world = HittableList::new();
+//     world.add(Arc::new(BvhNode::from_list(&mut Arc::new(boxes1))));
+//
+//     let light = Arc::new(DiffuseLight::new(&Color::new(7.0, 7.0, 7.0)));
+//     world.add(Arc::new(Quad::new(
+//         &Point3::new(123.0, 554.0, 147.0),
+//         &Vec3::new(300.0, 0.0, 0.0),
+//         &Vec3::new(0.0, 0.0, 265.0),
+//         light
+//     )));
+//
+//     let center1 = Point3::new(400.0, 400.0, 200.0);
+//     let center2 = center1 + Vec3::new(30.0, 0.0, 0.0);
+//     let sphere_material = Arc::new(Lambertian::new(Color::new(0.7, 0.3, 0.1)));
+//     world.add(Arc::new(Sphere::moving(&center1, 50.0, sphere_material, &center2)));
+//
+//     world.add(Arc::new(Sphere::new(
+//         &Point3::new(260.0, 150.0, 45.0),
+//         50.0,
+//         Arc::new(Dielectric::new(1.5)),
+//     )));
+//     world.add(Arc::new(Sphere::new(
+//         &Point3::new(0.0, 150.0, 145.0),
+//         50.0,
+//         Arc::new(Metal::new(Color::new(0.8, 0.8, 0.9), 1.0)),
+//     )));
+//
+//     let boundary = Arc::new(Sphere::new(
+//         &Point3::new(360.0, 150.0, 145.0), 70.0, Arc::new(Dielectric::new(1.5))));
+//     world.add(boundary);
+//     world.add(Arc::new(Cons))
+//
+//     let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
+//
+//     let image_settings = ImageSettings {
+//         aspect_ratio: 1.0,
+//         image_width: 600,
+//         quality: 100,
+//         samples_per_pixel: 200,
+//         max_depth: 50,
+//         background: Color::black(),
+//     };
+//
+//     let camera_settings = CameraSettings {
+//         vfov: 40.0,
+//         look_from: Point3::new(278.0, 278.0, -900.0),
+//         look_at: Point3::new(278.0, 278.0, 0.0),
+//         vup: Vec3::new(0.0, 1.0, 0.0),
+//         defocus_angle: 0.0,
+//         focus_dist: 10.0,
+//     };
+//
+//     let mut camera = Camera::new(image_settings, camera_settings);
+//     camera.render(world);
+//
+//     println!(
+//         "Output image as \"{}\"",
+//         style(path.to_str().unwrap()).yellow()
+//     );
+//     let output_image = image::DynamicImage::ImageRgb8(camera.img);
+//     let mut output_file = File::create(path).unwrap();
+//     match output_image.write_to(
+//         &mut output_file,
+//         image::ImageOutputFormat::Jpeg(camera.quality),
+//     ) {
+//         Ok(_) => {}
+//         Err(_) => println!("{}", style("Outputting image fails.").red()),
+//     }
+//
+//     exit(0);
+// }
