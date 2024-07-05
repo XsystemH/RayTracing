@@ -282,13 +282,18 @@ fn ray_color(r: Ray, depth: i32, world: &dyn Hittable, background: &Color) -> Co
     }
 
     if let Some(hit_record) = world.hit(&r, Interval::new(0.001, f64::INFINITY)) {
-        if let Some((scattered, attenuation)) = hit_record.mat.scatter(&r, &hit_record) {
-            return attenuation * ray_color(scattered, depth - 1, world, background);
+        return if let Some((scattered, attenuation)) = hit_record.mat.scatter(&r, &hit_record) {
+            let scattering_pdf = hit_record.mat.scattering_pdf(&r, &hit_record, &scattered);
+            let pdf = scattering_pdf;
+            attenuation * scattering_pdf * ray_color(scattered, depth - 1, world, background) / pdf
+                + hit_record
+                    .mat
+                    .emitted(hit_record.u, hit_record.v, &hit_record.p)
         } else {
-            return hit_record
+            hit_record
                 .mat
-                .emitted(hit_record.u, hit_record.v, &hit_record.p);
-        }
+                .emitted(hit_record.u, hit_record.v, &hit_record.p)
+        };
     }
 
     *background
