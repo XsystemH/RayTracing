@@ -282,9 +282,10 @@ fn ray_color(r: Ray, depth: i32, world: &dyn Hittable, background: &Color) -> Co
     }
 
     if let Some(hit_record) = world.hit(&r, Interval::new(0.001, f64::INFINITY)) {
-        let color_from_emission = hit_record
-            .mat
-            .emitted(hit_record.u, hit_record.v, &hit_record.p);
+        let color_from_emission =
+            hit_record
+                .mat
+                .emitted(&r, &hit_record, hit_record.u, hit_record.v, &hit_record.p);
         return if let Some((_scattered, attenuation, _pdf)) =
             hit_record.mat.scatter(&r, &hit_record)
         {
