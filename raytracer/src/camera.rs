@@ -3,7 +3,7 @@ use crate::hittable::Hittable;
 use crate::hittable_list::HittableList;
 use crate::interval::Interval;
 use crate::ray::Ray;
-use crate::vec3::{cross, random_in_unit_disk, unit_vector, Point3, Vec3, dot};
+use crate::vec3::{cross, dot, random_in_unit_disk, unit_vector, Point3, Vec3};
 use image::RgbImage; // ImageBuffer
 use indicatif::ProgressBar;
 use rand::{thread_rng, Rng};
@@ -309,7 +309,6 @@ fn ray_color(r: Ray, depth: i32, world: &dyn Hittable, background: &Color) -> Co
 
             let pdf = dis_squared / (light_cosine * light_area);
             let scattered = Ray::new(&hit_record.p, &to_light, r.time());
-
 
             let scattering_pdf = hit_record.mat.scattering_pdf(&r, &hit_record, &scattered);
 
