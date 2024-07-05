@@ -285,7 +285,9 @@ fn ray_color(r: Ray, depth: i32, world: &dyn Hittable, background: &Color) -> Co
         let color_from_emission = hit_record
             .mat
             .emitted(hit_record.u, hit_record.v, &hit_record.p);
-        return if let Some((_scattered, attenuation, _pdf)) = hit_record.mat.scatter(&r, &hit_record) {
+        return if let Some((_scattered, attenuation, _pdf)) =
+            hit_record.mat.scatter(&r, &hit_record)
+        {
             let on_light = Point3::new(
                 thread_rng().gen_range(213.0..343.0),
                 554.0,
