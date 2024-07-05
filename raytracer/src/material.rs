@@ -13,7 +13,7 @@ pub trait Material: Send + Sync {
     fn emitted(&self, _u: f64, _v: f64, _p: &Point3) -> Color {
         Color::black()
     }
-    fn scatter(&self, _r_in: &Ray, _rec: &HitRecord) -> Option<(Ray, Color)> {
+    fn scatter(&self, _r_in: &Ray, _rec: &HitRecord) -> Option<(Ray, Color, f64)> {
         None
     }
     fn scattering_pdf(&self, _r_in: &Ray, _rec: &HitRecord, _scattered: &Ray) -> f64 {
@@ -38,14 +38,14 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Ray, Color)> {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Ray, Color, f64)> {
         let uvw = Onb::new(&rec.normal);
         let scatter_direction = uvw.local(&random_cosine_direction());
 
         let scattered = Ray::new(&rec.p, &unit_vector(&scatter_direction), r_in.time());
         let attenuation = self.tex.value(rec.u, rec.v, &rec.p);
-        let _pdf = dot(&uvw.w(), &scattered.direction()) / std::f64::consts::PI;
-        Some((scattered, attenuation))
+        let pdf = dot(&uvw.w(), &scattered.direction()) / std::f64::consts::PI;
+        Some((scattered, attenuation, pdf))
     }
     fn scattering_pdf(&self, _r_in: &Ray, _rec: &HitRecord, _scattered: &Ray) -> f64 {
         1.0 / (2.0 * std::f64::consts::PI)
@@ -65,13 +65,13 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Ray, Color)> {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Ray, Color, f64)> {
         let mut reflected = reflect(&r_in.direction(), &rec.normal);
         reflected = unit_vector(&reflected) + random_unit_vector() * self.fuzz;
         let scattered = Ray::new(&rec.p, &reflected, r_in.time());
         let attenuation = self.albedo;
         if dot(&scattered.direction(), &rec.normal) > 0.0 {
-            Some((scattered, attenuation))
+            Some((scattered, attenuation, 1.0))
         } else {
             None
         }
@@ -94,7 +94,7 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Ray, Color)> {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Ray, Color, f64)> {
         let attenuation = Color::white();
         let ri = if rec.front_face {
             1.0 / self.refraction_index
@@ -115,7 +115,7 @@ impl Material for Dielectric {
             };
 
         let scattered = Ray::new(&rec.p, &direction, r_in.time());
-        Some((scattered, attenuation))
+        Some((scattered, attenuation, 1.0))
     }
 }
 
@@ -156,9 +156,13 @@ impl Isotropic {
 }
 
 impl Material for Isotropic {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Ray, Color)> {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Ray, Color, f64)> {
         let scattered = Ray::new(&rec.p, &random_unit_vector(), r_in.time());
         let attenuation = self.tex.value(rec.u, rec.v, &rec.p);
-        Some((scattered, attenuation))
+        let pdf = 1.0 / (4.0 * std::f64::consts::PI);
+        Some((scattered, attenuation, pdf))
+    }
+    fn scattering_pdf(&self, _r_in: &Ray, _rec: &HitRecord, _scattered: &Ray) -> f64 {
+        1.0 / (4.0 * std::f64::consts::PI)
     }
 }

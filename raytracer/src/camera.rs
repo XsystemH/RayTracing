@@ -3,7 +3,7 @@ use crate::hittable::Hittable;
 use crate::hittable_list::HittableList;
 use crate::interval::Interval;
 use crate::ray::Ray;
-use crate::vec3::{cross, random_in_unit_disk, unit_vector, Point3, Vec3};
+use crate::vec3::{cross, random_in_unit_disk, unit_vector, Point3, Vec3, dot};
 use image::RgbImage; // ImageBuffer
 use indicatif::ProgressBar;
 use rand::{thread_rng, Rng};
@@ -282,17 +282,39 @@ fn ray_color(r: Ray, depth: i32, world: &dyn Hittable, background: &Color) -> Co
     }
 
     if let Some(hit_record) = world.hit(&r, Interval::new(0.001, f64::INFINITY)) {
-        return if let Some((scattered, attenuation)) = hit_record.mat.scatter(&r, &hit_record) {
+        let color_from_emission = hit_record
+            .mat
+            .emitted(hit_record.u, hit_record.v, &hit_record.p);
+        return if let Some((_scattered, attenuation, _pdf)) = hit_record.mat.scatter(&r, &hit_record) {
+            let on_light = Point3::new(
+                thread_rng().gen_range(213.0..343.0),
+                554.0,
+                thread_rng().gen_range(227.0..332.0),
+            );
+            let to_light = on_light - hit_record.p;
+            let dis_squared = to_light.length_squared();
+            let to_light = unit_vector(&to_light);
+
+            if dot(&to_light, &hit_record.normal) < 0.0 {
+                return color_from_emission;
+            }
+
+            let light_area = (343.0 - 213.0) * (332.0 - 227.0);
+            let light_cosine = to_light.y.abs();
+            if light_cosine < 0.000001 {
+                return color_from_emission;
+            }
+
+            let pdf = dis_squared / (light_cosine * light_area);
+            let scattered = Ray::new(&hit_record.p, &to_light, r.time());
+
+
             let scattering_pdf = hit_record.mat.scattering_pdf(&r, &hit_record, &scattered);
-            let pdf = scattering_pdf;
+
             attenuation * scattering_pdf * ray_color(scattered, depth - 1, world, background) / pdf
-                + hit_record
-                    .mat
-                    .emitted(hit_record.u, hit_record.v, &hit_record.p)
+                + color_from_emission
         } else {
-            hit_record
-                .mat
-                .emitted(hit_record.u, hit_record.v, &hit_record.p)
+            color_from_emission
         };
     }
 

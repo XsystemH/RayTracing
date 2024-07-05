@@ -345,11 +345,11 @@ fn quads() {
 }
 
 fn cornell_box() {
-    let path = std::path::Path::new("output/book3/image6.jpg");
+    let path = std::path::Path::new("output/book3/image7.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 
-    let diffuse = Arc::new(DiffuseLight::new(&Color::new(7.0, 7.0, 7.0)));
+    let diffuse = Arc::new(DiffuseLight::new(&Color::new(12.0, 12.0, 12.0)));
     let red = Arc::new(Lambertian::new(Color::new(0.65, 0.05, 0.05)));
     let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
     let green = Arc::new(Lambertian::new(Color::new(0.12, 0.45, 0.15)));
@@ -418,7 +418,7 @@ fn cornell_box() {
         aspect_ratio: 1.0,
         image_width: 600,
         quality: 100,
-        samples_per_pixel: 500,
+        samples_per_pixel: 10,
         max_depth: 50,
         background: Color::black(),
     };
