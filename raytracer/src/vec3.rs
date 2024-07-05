@@ -1,4 +1,4 @@
-use rand::Rng;
+use rand::{thread_rng, Rng};
 use std::f64;
 use std::ops::{
     Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
@@ -49,7 +49,7 @@ impl Vec3 {
             rng.gen_range(min..max),
         )
     }
-    pub fn near_zero(&self) -> bool {
+    pub fn _near_zero(&self) -> bool {
         let s: f64 = 1e-8;
         self.x.abs() < s && self.y.abs() < s && self.z.abs() < s
     }
@@ -79,12 +79,23 @@ pub fn random_in_unit_sphere() -> Vec3 {
 pub fn random_unit_vector() -> Vec3 {
     unit_vector(&random_in_unit_sphere())
 }
-pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
+pub fn _random_on_hemisphere(normal: &Vec3) -> Vec3 {
     let on_unit_sphere = random_unit_vector();
     if dot(&on_unit_sphere, normal) > 0.0 {
         on_unit_sphere
     } else {
         -on_unit_sphere
+    }
+}
+pub fn random_cosine_direction() -> Vec3 {
+    let r1: f64 = thread_rng().gen_range(0.0..1.0);
+    let r2: f64 = thread_rng().gen_range(0.0..1.0);
+
+    let phi = 2.0 * r1 * std::f64::consts::PI;
+    Vec3 {
+        x: phi.cos() * r2.sqrt(),
+        y: phi.sin() * r2.sqrt(),
+        z: (1.0 - r2).sqrt(),
     }
 }
 pub fn random_in_unit_disk() -> Vec3 {

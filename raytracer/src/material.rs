@@ -1,9 +1,10 @@
 use crate::color::Color;
 use crate::hittable::HitRecord;
+use crate::onb::Onb;
 use crate::ray::Ray;
 use crate::texture::{SolidColor, Texture};
 use crate::vec3::{
-    dot, random_on_hemisphere, random_unit_vector, reflect, refract, unit_vector, Point3,
+    dot, random_cosine_direction, random_unit_vector, reflect, refract, unit_vector, Point3,
 };
 use rand::Rng;
 use std::sync::Arc;
@@ -38,14 +39,12 @@ impl Lambertian {
 
 impl Material for Lambertian {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Ray, Color)> {
-        let mut scatter_direction = random_on_hemisphere(&rec.normal);
+        let uvw = Onb::new(&rec.normal);
+        let scatter_direction = uvw.local(&random_cosine_direction());
 
-        if scatter_direction.near_zero() {
-            scatter_direction = rec.normal;
-        }
-
-        let scattered = Ray::new(&rec.p, &scatter_direction, r_in.time());
+        let scattered = Ray::new(&rec.p, &unit_vector(&scatter_direction), r_in.time());
         let attenuation = self.tex.value(rec.u, rec.v, &rec.p);
+        let _pdf = dot(&uvw.w(), &scattered.direction()) / std::f64::consts::PI;
         Some((scattered, attenuation))
     }
     fn scattering_pdf(&self, _r_in: &Ray, _rec: &HitRecord, _scattered: &Ray) -> f64 {
