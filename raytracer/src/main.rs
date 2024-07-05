@@ -344,7 +344,7 @@ fn quads() {
 }
 
 fn cornell_box() {
-    let path = std::path::Path::new("output/book2/image22.jpg");
+    let path = std::path::Path::new("output/book3/image2.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 
@@ -398,7 +398,8 @@ fn cornell_box() {
     );
     let box1 = Arc::new(RotateY::new(box1, 15.0));
     let box1 = Arc::new(Translate::new(box1, &Vec3::new(265.0, 0.0, 295.0)));
-    world.add(Arc::new(ConstantMedium::new(box1, 0.01, &Color::black())));
+    // world.add(Arc::new(ConstantMedium::new(box1, 0.01, &Color::black())));
+    world.add(box1);
 
     let box2 = cuboid(
         &Point3::new(0.0, 0.0, 0.0),
@@ -407,7 +408,8 @@ fn cornell_box() {
     );
     let box2 = Arc::new(RotateY::new(box2, -18.0));
     let box2 = Arc::new(Translate::new(box2, &Vec3::new(130.0, 0.0, 65.0)));
-    world.add(Arc::new(ConstantMedium::new(box2, 0.01, &Color::white())));
+    // world.add(Arc::new(ConstantMedium::new(box2, 0.01, &Color::white())));
+    world.add(box2);
 
     let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
 
@@ -415,14 +417,14 @@ fn cornell_box() {
         aspect_ratio: 1.0,
         image_width: 600,
         quality: 100,
-        samples_per_pixel: 200,
+        samples_per_pixel: 64,
         max_depth: 50,
         background: Color::black(),
     };
 
     let camera_settings = CameraSettings {
         vfov: 40.0,
-        look_from: Point3::new(278.0, 278.0, -900.0),
+        look_from: Point3::new(278.0, 278.0, -800.0),
         look_at: Point3::new(278.0, 278.0, 0.0),
         vup: Vec3::new(0.0, 1.0, 0.0),
         defocus_angle: 0.0,
@@ -458,7 +460,7 @@ fn main() {
         perlin();
     } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         quads();
-    } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
+    } else if thread_rng().gen_range(0.0..1.0) < 0.9999991 {
         cornell_box();
     }
     let path = std::path::Path::new("output/book2/image23.jpg");
@@ -575,13 +577,13 @@ fn main() {
         &Vec3::new(-100.0, 270.0, 395.0),
     )));
 
-    let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
+    // let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
 
     let image_settings = ImageSettings {
         aspect_ratio: 1.0,
-        image_width: 800,
+        image_width: 400,
         quality: 100,
-        samples_per_pixel: 5000,
+        samples_per_pixel: 200,
         max_depth: 40,
         background: Color::black(),
     };

@@ -37,6 +37,8 @@ pub struct Camera {
     pub quality: u8,
     pub samples_per_pixel: u32,
     pub pixel_samples_scale: f64,
+    pub sqrt_spp: u32,
+    pub recip_sqrt_spp: f64,
     pub max_depth: i32,
     pub background: Color,
     pub img: RgbImage,
@@ -89,7 +91,9 @@ impl Camera {
         let camera_center: Point3 = look_from;
         let theta: f64 = vfov * std::f64::consts::PI / 180.0;
         let h: f64 = f64::tan(theta / 2.0);
-        let pixel_samples_scale: f64 = 1.0 / samples_per_pixel as f64;
+        let sqrt_spp = (samples_per_pixel as f64).sqrt() as u32;
+        let pixel_samples_scale: f64 = 1.0 / (sqrt_spp * sqrt_spp) as f64;
+        let recip_sqrt_spp = 1.0 / sqrt_spp as f64;
         let viewport_height: f64 = 2.0 * h * focus_dist;
         let viewport_width: f64 = viewport_height * (image_width as f64 / image_height as f64);
         // edge vector
@@ -117,6 +121,8 @@ impl Camera {
             quality,
             samples_per_pixel,
             pixel_samples_scale,
+            sqrt_spp,
+            recip_sqrt_spp,
             max_depth,
             background,
             img: RgbImage::new(image_width, image_height),
@@ -156,21 +162,23 @@ impl Camera {
 
         let mut rend_lines = vec![];
 
+        let image_width = self.image_width;
         for j in (0..self.image_height).rev() {
             let lines_clone = Arc::clone(&lines);
             // let img = Arc::clone(&img);
             let progress = Arc::clone(&progress);
             let world = world.clone();
-            let image_width = self.image_width;
             let copy = Sensor::new(self);
             let rend_line = thread::spawn(move || {
                 let mut line: Vec<Color> = Vec::with_capacity(image_width as usize);
                 for i in 0..image_width {
                     let mut pixel_color: Color = Color::new(0.0, 0.0, 0.0);
 
-                    for _sample in 0..copy.samples_per_pixel {
-                        let r = copy.get_ray(i, j);
-                        pixel_color += ray_color(r, copy.max_depth, &world, &copy.background);
+                    for s_j in 0..copy.sqrt_spp {
+                        for s_i in 0..copy.sqrt_spp {
+                            let r = copy.get_ray(i, j, s_i, s_j);
+                            pixel_color += ray_color(r, copy.max_depth, &world, &copy.background);
+                        }
                     }
                     pixel_color *= copy.pixel_samples_scale;
 
@@ -210,8 +218,9 @@ impl Camera {
 }
 
 struct Sensor {
-    pub samples_per_pixel: u32,
     pub pixel_samples_scale: f64,
+    pub sqrt_spp: u32,
+    pub recip_sqrt_spp: f64,
     pub max_depth: i32,
     pub background: Color,
     pub pixel100_loc: Point3,
@@ -226,8 +235,9 @@ struct Sensor {
 impl Sensor {
     pub fn new(camera: &Camera) -> Self {
         Self {
-            samples_per_pixel: camera.samples_per_pixel,
             pixel_samples_scale: camera.pixel_samples_scale,
+            sqrt_spp: camera.sqrt_spp,
+            recip_sqrt_spp: camera.recip_sqrt_spp,
             max_depth: camera.max_depth,
             background: camera.background,
             pixel100_loc: camera.pixel100_loc,
@@ -239,8 +249,8 @@ impl Sensor {
             defocus_disk_v: camera.defocus_disk_v,
         }
     }
-    fn get_ray(&self, i: u32, j: u32) -> Ray {
-        let offset = sample_square();
+    fn get_ray(&self, i: u32, j: u32, s_i: u32, s_j: u32) -> Ray {
+        let offset = self.sample_square_stratified(s_i, s_j);
         let pixel_sample = self.pixel100_loc
             + (self.pixel_delta_u * (i as f64 + offset.x))
             + (self.pixel_delta_v * (j as f64 + offset.y));
@@ -257,6 +267,12 @@ impl Sensor {
     fn defocus_disk_sample(&self) -> Point3 {
         let p = random_in_unit_disk();
         self.camera_center + (self.defocus_disk_u * p.x) + (self.defocus_disk_v * p.y)
+    }
+    fn sample_square_stratified(&self, s_i: u32, s_j: u32) -> Vec3 {
+        let px = (s_i as f64 + thread_rng().gen_range(0.0..1.0)) * self.recip_sqrt_spp - 0.5;
+        let py = (s_j as f64 + thread_rng().gen_range(0.0..1.0)) * self.recip_sqrt_spp - 0.5;
+
+        Vec3::new(px, py, 0.0)
     }
 }
 
@@ -278,7 +294,7 @@ fn ray_color(r: Ray, depth: i32, world: &dyn Hittable, background: &Color) -> Co
     *background
 }
 
-fn sample_square() -> Vec3 {
+fn _sample_square() -> Vec3 {
     let mut rng = thread_rng();
     Vec3::new(rng.gen_range(-0.5..0.5), rng.gen_range(-0.5..0.5), 0.0)
 }
