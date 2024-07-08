@@ -2,6 +2,7 @@ use crate::vec3::Point3;
 use crate::vec3::Vec3;
 use std::f64;
 
+#[derive(Debug)]
 pub struct Ray {
     _orig: Point3,
     dir: Vec3,
