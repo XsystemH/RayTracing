@@ -401,7 +401,7 @@ fn cornell_box() {
         &Point3::new(0.0, 0.0, 555.0),
         &Vec3::new(555.0, 0.0, 0.0),
         &Vec3::new(0.0, 555.0, 0.0),
-        white.clone(),
+        white,
     )));
 
     let aluminum = Arc::new(Metal::new(Color::new(0.8, 0.85, 0.88), 0.0));
@@ -415,7 +415,11 @@ fn cornell_box() {
     world.add(box1);
 
     let glass = Arc::new(Dielectric::new(1.5));
-    world.add(Arc::new(Sphere::new(&Point3::new(190.0, 90.0, 190.0), 90.0, glass)));
+    world.add(Arc::new(Sphere::new(
+        &Point3::new(190.0, 90.0, 190.0),
+        90.0,
+        glass,
+    )));
 
     let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
     // let lights = HittableList::new_from(Arc::new(BvhNode::from_list(&mut lights)));

@@ -2,11 +2,11 @@ use crate::aabb::Aabb;
 use crate::hittable::{HitRecord, Hittable};
 use crate::interval::Interval;
 use crate::material::Material;
+use crate::onb::Onb;
 use crate::ray::Ray;
 use crate::vec3::{dot, Point3, Vec3};
+use rand::{thread_rng, Rng};
 use std::sync::Arc;
-use rand::{Rng, thread_rng};
-use crate::onb::Onb;
 
 pub struct Sphere {
     center: Point3,
@@ -103,7 +103,8 @@ impl Hittable for Sphere {
             &Ray::new(origin, direction, 0.0),
             Interval::new(0.001, f64::INFINITY),
         ) {
-            let cos_theta_max = (1.0 - self.radius * self.radius / (self.center - *origin).length_squared()).sqrt();
+            let cos_theta_max =
+                (1.0 - self.radius * self.radius / (self.center - *origin).length_squared()).sqrt();
             let solid_angle = 2.0 * std::f64::consts::PI * (1.0 - cos_theta_max);
             1.0 / solid_angle
         } else {
@@ -128,5 +129,5 @@ fn random_to_sphere(radius: f64, dis_squared: f64) -> Vec3 {
     let x = phi.cos() * (1.0 - z * z).sqrt();
     let y = phi.sin() * (1.0 - z * z).sqrt();
 
-    Vec3 { x, y, z, }
+    Vec3 { x, y, z }
 }
