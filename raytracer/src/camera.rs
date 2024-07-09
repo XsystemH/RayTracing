@@ -166,7 +166,6 @@ impl Camera {
         let image_width = self.image_width;
         for j in (0..self.image_height).rev() {
             let lines_clone = Arc::clone(&lines);
-            // let img = Arc::clone(&img);
             let progress = Arc::clone(&progress);
             let world = world.clone();
             let lights = lights.clone();
@@ -193,9 +192,11 @@ impl Camera {
 
                     let progress = progress.lock().unwrap();
                     progress.inc(1);
+                    drop(progress);
                 }
                 let mut lines = lines_clone.lock().unwrap();
                 lines[j as usize] = Some(line);
+                drop(lines);
             });
             rend_lines.push(rend_line);
         }

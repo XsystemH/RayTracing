@@ -471,7 +471,7 @@ fn main() {
         perlin();
     } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         quads();
-    } else if thread_rng().gen_range(0.0..1.0) < 0.9999991 {
+    } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         cornell_box();
     }
     let path = std::path::Path::new("output/book2/image23.jpg");
@@ -501,10 +501,17 @@ fn main() {
     }
 
     let mut world = HittableList::new();
+    let mut lights = HittableList::new();
     world.add(Arc::new(BvhNode::from_list(&mut boxes1)));
 
     let light = Arc::new(DiffuseLight::new(&Color::new(15.0, 15.0, 15.0)));
     world.add(Arc::new(Quad::new(
+        &Point3::new(123.0, 554.0, 147.0),
+        &Vec3::new(300.0, 0.0, 0.0),
+        &Vec3::new(0.0, 0.0, 265.0),
+        light.clone(),
+    )));
+    lights.add(Arc::new(Quad::new(
         &Point3::new(123.0, 554.0, 147.0),
         &Vec3::new(300.0, 0.0, 0.0),
         &Vec3::new(0.0, 0.0, 265.0),
@@ -589,13 +596,13 @@ fn main() {
     )));
 
     let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
-    let lights = Arc::new(HittableList::new());
+    let lights = Arc::new(lights);
 
     let image_settings = ImageSettings {
         aspect_ratio: 1.0,
-        image_width: 400,
+        image_width: 600,
         quality: 100,
-        samples_per_pixel: 200,
+        samples_per_pixel: 2500,
         max_depth: 40,
         background: Color::black(),
     };
