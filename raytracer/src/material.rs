@@ -47,8 +47,13 @@ impl Material for Lambertian {
         let pdf = dot(&uvw.w(), &scattered.direction()) / std::f64::consts::PI;
         Some((scattered, attenuation, pdf))
     }
-    fn scattering_pdf(&self, _r_in: &Ray, _rec: &HitRecord, _scattered: &Ray) -> f64 {
-        1.0 / (2.0 * std::f64::consts::PI)
+    fn scattering_pdf(&self, _r_in: &Ray, rec: &HitRecord, scattered: &Ray) -> f64 {
+        let cosine = dot(&rec.normal, &unit_vector(&scattered.direction()));
+        if cosine < 0.0 {
+            0.0
+        } else {
+            cosine / std::f64::consts::PI
+        }
     }
 }
 
