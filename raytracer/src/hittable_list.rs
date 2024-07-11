@@ -52,10 +52,10 @@ impl Hittable for HittableList {
 
     fn pdf_value(&self, origin: &Point3, direction: &Vec3) -> f64 {
         let mut sum: f64 = 0.0;
+        let weight = 1.0 / self.objects.len() as f64;
         for object in self.objects.iter() {
-            sum += object.pdf_value(origin, direction);
+            sum += weight * object.pdf_value(origin, direction);
         }
-        sum /= self.objects.len() as f64;
         sum
     }
 
