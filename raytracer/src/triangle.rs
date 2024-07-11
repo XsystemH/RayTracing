@@ -1,11 +1,11 @@
-use std::sync::Arc;
-use rand::{Rng, thread_rng};
 use crate::aabb::Aabb;
 use crate::hittable::{HitRecord, Hittable};
 use crate::interval::Interval;
 use crate::material::Material;
 use crate::ray::Ray;
-use crate::vec3::{cross, dot, Point3, unit_vector, Vec3};
+use crate::vec3::{cross, dot, unit_vector, Point3, Vec3};
+use rand::{thread_rng, Rng};
+use std::sync::Arc;
 
 pub struct Triangle {
     q: Point3,
@@ -89,7 +89,7 @@ impl Hittable for Triangle {
         ) {
             let distance_squared = rec.t * rec.t * direction.length_squared();
             let cosine = dot(direction, &rec.normal).abs() / direction.length();
-            
+
             distance_squared / (cosine * self.area)
         } else {
             0.0
@@ -98,7 +98,7 @@ impl Hittable for Triangle {
 
     fn random(&self, origin: &Point3) -> Vec3 {
         let a = thread_rng().gen_range(0.0..1.0);
-        let b = thread_rng().gen_range(0.0..1.0-a);
+        let b = thread_rng().gen_range(0.0..1.0 - a);
         let p = self.q + self.u * a + self.v * b;
         p - *origin
     }

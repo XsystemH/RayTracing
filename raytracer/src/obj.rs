@@ -1,11 +1,10 @@
-use tobj;
-use std::sync::Arc;
 use crate::bvh::BvhNode;
 use crate::color::Color;
 use crate::hittable_list::HittableList;
 use crate::material::Lambertian;
 use crate::triangle::Triangle;
 use crate::vec3::Point3;
+use std::sync::Arc;
 
 pub fn read_obj(obj_filename: &str, scale: f64) -> HittableList {
     let mut object = HittableList::new();
@@ -19,7 +18,8 @@ pub fn read_obj(obj_filename: &str, scale: f64) -> HittableList {
             triangulate: false,
             ignore_points: true,
             ignore_lines: true,
-        });
+        },
+    );
     assert!(obj.is_ok());
 
     let (models, materials) = obj.expect("Failed to load OBJ file");
@@ -34,11 +34,7 @@ pub fn read_obj(obj_filename: &str, scale: f64) -> HittableList {
 
     for (i, m) in models.iter().enumerate() {
         let mesh = &m.mesh;
-        println!(
-            "Number of Faces of model{}: {}",
-            i,
-            mesh.face_arities.len(),
-        );
+        println!("Number of Faces of model{}: {}", i, mesh.face_arities.len(),);
         // println!("  model[{}] = {:?}", i, mesh.indices);
         let mut next_face = 0;
         for f in 0..mesh.face_arities.len() {
@@ -61,21 +57,21 @@ pub fn read_obj(obj_filename: &str, scale: f64) -> HittableList {
                 }
             }
 
-            let mut p: [Point3;3] = [Color::white();3];
+            let mut p: [Point3; 3] = [Color::white(); 3];
             let mut t = 0;
             let p0 = *face_indices[0] as usize;
             p[0] = Point3::new(
-                mesh.positions[p0*3] as f64 * scale,
-                mesh.positions[p0*3 + 1] as f64 * scale,
-                mesh.positions[p0*3 + 2] as f64 * scale,
+                mesh.positions[p0 * 3] as f64 * scale,
+                mesh.positions[p0 * 3 + 1] as f64 * scale,
+                mesh.positions[p0 * 3 + 2] as f64 * scale,
             );
             for v in face_indices {
                 t += 1;
                 p[1] = p[2];
                 p[2] = Point3::new(
-                    mesh.positions[*v as usize*3] as f64 * scale,
-                    mesh.positions[*v as usize*3 + 1] as f64 * scale,
-                    mesh.positions[*v as usize*3 + 2] as f64 * scale,
+                    mesh.positions[*v as usize * 3] as f64 * scale,
+                    mesh.positions[*v as usize * 3 + 1] as f64 * scale,
+                    mesh.positions[*v as usize * 3 + 2] as f64 * scale,
                 );
 
                 if t >= 3 {
