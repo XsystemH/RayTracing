@@ -353,7 +353,7 @@ fn quads() {
 }
 
 fn cornell_box() {
-    let path = std::path::Path::new("output/advanced/image1.jpg");
+    let path = std::path::Path::new("output/advanced/image2.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
 
@@ -407,9 +407,13 @@ fn cornell_box() {
     //     white,
     // )));
 
+    let obj = read_obj("Haunter.obj", 300.0);
+    let obj = RotateY::new(Arc::new(obj), -30.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(156.0, 206.0, 300.0));
+    world.add(Arc::new(obj));
     let obj = read_obj("Cubone.obj", 500.0);
-    let obj = RotateY::new(Arc::new(obj), 30.0);
-    let obj = Translate::new(Arc::new(obj), &Vec3::new(256.0, 206.0, 200.0));
+    let obj = RotateY::new(Arc::new(obj), 150.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(356.0, 206.0, 150.0));
     world.add(Arc::new(obj));
     // world.add(Arc::new(Triangle::new(
     //     &Point3::new(0.0, 0.0, 400.0),
