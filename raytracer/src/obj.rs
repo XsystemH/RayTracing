@@ -22,8 +22,15 @@ pub fn read_obj(obj_filename: &str, scale: f64) -> HittableList {
         });
     assert!(obj.is_ok());
 
-    let (models, _materials) = obj.expect("Failed to load OBJ file");
+    let (models, materials) = obj.expect("Failed to load OBJ file");
     println!("# of models: {}", models.len());
+    let mut mat_is_ok = false;
+    if materials.is_ok() {
+        mat_is_ok = true;
+        println!("Load material successfully!");
+    } else {
+        println!("Unable to load material");
+    }
 
     for (i, m) in models.iter().enumerate() {
         let mesh = &m.mesh;
@@ -32,7 +39,7 @@ pub fn read_obj(obj_filename: &str, scale: f64) -> HittableList {
             i,
             mesh.face_arities.len(),
         );
-        println!("  model[{}] = {:?}", i, mesh.indices);
+        // println!("  model[{}] = {:?}", i, mesh.indices);
         let mut next_face = 0;
         for f in 0..mesh.face_arities.len() {
             let end = next_face + mesh.face_arities[f] as usize;
@@ -40,7 +47,20 @@ pub fn read_obj(obj_filename: &str, scale: f64) -> HittableList {
             println!("    face[{}] = {:?}", f, face_indices);
             next_face = end;
 
-            let mat = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.8)));
+            let mut mat = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.8)));
+            if mat_is_ok {
+                if let Some(id) = mesh.material_id {
+                    if let Some(diffuse) = materials.clone().unwrap()[id].diffuse {
+                        mat = Arc::new(Lambertian::new(Color::new(
+                            diffuse[0] as f64,
+                            diffuse[1] as f64,
+                            diffuse[2] as f64,
+                        )));
+                        println!("The color is {:?}", diffuse);
+                    }
+                }
+            }
+
             let mut p: [Point3;3] = [Color::white();3];
             let mut t = 0;
             let p0 = *face_indices[0] as usize;
@@ -60,10 +80,10 @@ pub fn read_obj(obj_filename: &str, scale: f64) -> HittableList {
 
                 if t >= 3 {
                     object.add(Arc::new(Triangle::new(&p[0], &p[1], &p[2], mat.clone())));
-                    println!("      Add Triangle:");
-                    println!("        {:?}", p[0]);
-                    println!("        {:?}", p[1]);
-                    println!("        {:?}", p[2]);
+                    // println!("      Add Triangle:");
+                    // println!("        {:?}", p[0]);
+                    // println!("        {:?}", p[1]);
+                    // println!("        {:?}", p[2]);
                 }
             }
         }
