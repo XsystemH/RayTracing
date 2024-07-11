@@ -2,6 +2,10 @@
 
 A 2-week object in PPCA of ACMClass-2023
 
+![](images/Book1Final.jpg)
+
+![](images/Book2Final.jpg)
+
 (ps: My `main` function is in a mess, because I'm trying to avoid warning of some fn never used when I need to ignore it sometimes)
 
 ---
