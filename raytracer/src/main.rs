@@ -19,6 +19,7 @@ mod texture;
 mod translate;
 mod triangle;
 mod vec3;
+mod edge;
 
 use crate::bvh::BvhNode;
 use crate::camera::{Camera, CameraSettings, ImageSettings};
@@ -407,13 +408,9 @@ fn cornell_box() {
     //     white,
     // )));
 
-    let obj = read_obj("Haunter.obj", 300.0);
-    let obj = RotateY::new(Arc::new(obj), -30.0);
-    let obj = Translate::new(Arc::new(obj), &Vec3::new(156.0, 206.0, 300.0));
-    world.add(Arc::new(obj));
     let obj = read_obj("Cubone.obj", 500.0);
-    let obj = RotateY::new(Arc::new(obj), 150.0);
-    let obj = Translate::new(Arc::new(obj), &Vec3::new(356.0, 206.0, 150.0));
+    let obj = RotateY::new(Arc::new(obj), 30.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(256.0, 256.0, 0.0));
     world.add(Arc::new(obj));
     // world.add(Arc::new(Triangle::new(
     //     &Point3::new(0.0, 0.0, 400.0),
@@ -427,10 +424,10 @@ fn cornell_box() {
 
     let image_settings = ImageSettings {
         aspect_ratio: 1.0,
-        image_width: 600,
+        image_width: 480,
         quality: 100,
-        samples_per_pixel: 64,
-        max_depth: 50,
+        samples_per_pixel: 25,
+        max_depth: 20,
         background: Color::black(),
     };
 
@@ -472,7 +469,7 @@ fn main() {
         perlin();
     } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         quads();
-    } else if thread_rng().gen_range(0.0..1.0) < 0.9999991 {
+    } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         cornell_box();
     }
     let path = std::path::Path::new("output/book2/image23.jpg");
@@ -601,9 +598,9 @@ fn main() {
 
     let image_settings = ImageSettings {
         aspect_ratio: 1.0,
-        image_width: 600,
+        image_width: 1200,
         quality: 100,
-        samples_per_pixel: 2500,
+        samples_per_pixel: 5000,
         max_depth: 40,
         background: Color::black(),
     };

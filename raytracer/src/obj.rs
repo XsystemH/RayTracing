@@ -1,10 +1,11 @@
 use crate::bvh::BvhNode;
 use crate::color::Color;
 use crate::hittable_list::HittableList;
-use crate::material::Lambertian;
+use crate::material::{Lambertian, Material, Metal};
 use crate::triangle::Triangle;
 use crate::vec3::Point3;
 use std::sync::Arc;
+use crate::texture::ImageTexture;
 
 pub fn read_obj(obj_filename: &str, scale: f64) -> HittableList {
     let mut object = HittableList::new();
@@ -23,7 +24,7 @@ pub fn read_obj(obj_filename: &str, scale: f64) -> HittableList {
     assert!(obj.is_ok());
 
     let (models, materials) = obj.expect("Failed to load OBJ file");
-    println!("# of models: {}", models.len());
+    println!("import {} of models: {}", filename, models.len());
     let mut mat_is_ok = false;
     if materials.is_ok() {
         mat_is_ok = true;
@@ -34,52 +35,89 @@ pub fn read_obj(obj_filename: &str, scale: f64) -> HittableList {
 
     for (i, m) in models.iter().enumerate() {
         let mesh = &m.mesh;
-        println!("Number of Faces of model{}: {}", i, mesh.face_arities.len(),);
-        // println!("  model[{}] = {:?}", i, mesh.indices);
-        let mut next_face = 0;
-        for f in 0..mesh.face_arities.len() {
-            let end = next_face + mesh.face_arities[f] as usize;
-            let face_indices: Vec<_> = mesh.indices[next_face..end].iter().collect();
-            println!("    face[{}] = {:?}", f, face_indices);
-            next_face = end;
 
-            let mut mat = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.8)));
-            if mat_is_ok {
-                if let Some(id) = mesh.material_id {
-                    if let Some(diffuse) = materials.clone().unwrap()[id].diffuse {
-                        mat = Arc::new(Lambertian::new(Color::new(
-                            diffuse[0] as f64,
-                            diffuse[1] as f64,
-                            diffuse[2] as f64,
-                        )));
-                        println!("The color is {:?}", diffuse);
+        let mut mat:Arc<dyn Material> = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.8)));
+        if mat_is_ok {
+            if let Some(id) = mesh.material_id {
+                if let Some(diffuse) = materials.clone().unwrap()[id].diffuse {
+                    mat = Arc::new(Lambertian::new(Color::new(
+                        diffuse[0] as f64,
+                        diffuse[1] as f64,
+                        diffuse[2] as f64,
+                    )));
+                    println!("  The color of Lambertian is {:?}", diffuse);
+                } else if let Some(specular) = materials.clone().unwrap()[id].specular {
+                    if let Some(shininess) = materials.clone().unwrap()[id].shininess {
+                        mat = Arc::new(Metal::new(Color::new(
+                            specular[0] as f64,
+                            specular[1] as f64,
+                            specular[2] as f64,
+                        ), shininess as f64,
+                        ));
+                        println!("  The color of Metal is {:?}, Ns = {}", specular, shininess);
+                    } else {
+                        println!("  Metal import wrong!");
+                    }
+                } else if let Some(diffuse_texture) = &materials.clone().unwrap()[id].diffuse_texture {
+                    println!("  Map image file: {}", diffuse_texture);
+                    let tex = Arc::new(ImageTexture::new(diffuse_texture));
+                    mat = Arc::new(Lambertian::new_tex(tex));
+                }
+                else {
+                    println!("    Unsupported Material!");
+                }
+            }
+        }
+
+        if mesh.face_arities.len() != 0 {
+            println!("Number of Faces of model{}: {}", i, mesh.face_arities.len(),);
+            let mut next_face = 0;
+            for f in 0..mesh.face_arities.len() {
+                let end = next_face + mesh.face_arities[f] as usize;
+                let face_indices: Vec<_> = mesh.indices[next_face..end].iter().collect();
+                println!("    face[{}] = {:?}", f, face_indices);
+                next_face = end;
+
+                let mut p: [Point3; 3] = [Color::white(); 3];
+                let mut t = 0;
+                let p0 = *face_indices[0] as usize;
+                p[0] = Point3::new(
+                    mesh.positions[p0 * 3] as f64 * scale,
+                    mesh.positions[p0 * 3 + 1] as f64 * scale,
+                    mesh.positions[p0 * 3 + 2] as f64 * scale,
+                );
+                for v in face_indices {
+                    t += 1;
+                    p[1] = p[2];
+                    p[2] = Point3::new(
+                        mesh.positions[*v as usize * 3] as f64 * scale,
+                        mesh.positions[*v as usize * 3 + 1] as f64 * scale,
+                        mesh.positions[*v as usize * 3 + 2] as f64 * scale,
+                    );
+
+                    if t >= 3 {
+                        object.add(Arc::new(Triangle::new(&p[0], &p[1], &p[2], mat.clone())));
+                        // println!("      Add Triangle:");
+                        // println!("        {:?}", p[0]);
+                        // println!("        {:?}", p[1]);
+                        // println!("        {:?}", p[2]);
                     }
                 }
             }
-
-            let mut p: [Point3; 3] = [Color::white(); 3];
+        } else { // All triangles
+            println!("    Model[{}] has {} triangles", i, mesh.indices.len() / 3);
+            let mut p: [Point3;3] = [Color::white();3];
             let mut t = 0;
-            let p0 = *face_indices[0] as usize;
-            p[0] = Point3::new(
-                mesh.positions[p0 * 3] as f64 * scale,
-                mesh.positions[p0 * 3 + 1] as f64 * scale,
-                mesh.positions[p0 * 3 + 2] as f64 * scale,
-            );
-            for v in face_indices {
-                t += 1;
-                p[1] = p[2];
-                p[2] = Point3::new(
+            for v in &mesh.indices {
+                p[t] = Point3::new(
                     mesh.positions[*v as usize * 3] as f64 * scale,
                     mesh.positions[*v as usize * 3 + 1] as f64 * scale,
                     mesh.positions[*v as usize * 3 + 2] as f64 * scale,
                 );
-
-                if t >= 3 {
+                t += 1;
+                if t == 3 {
                     object.add(Arc::new(Triangle::new(&p[0], &p[1], &p[2], mat.clone())));
-                    // println!("      Add Triangle:");
-                    // println!("        {:?}", p[0]);
-                    // println!("        {:?}", p[1]);
-                    // println!("        {:?}", p[2]);
+                    t = 0;
                 }
             }
         }

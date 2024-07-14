@@ -37,7 +37,7 @@ So we implement functions like hit recursively.
 
 Usage example:
 
-```rust
+```
 let obj = read_obj("Haunter.obj", 300.0);
     let obj = RotateY::new(Arc::new(obj), -30.0);
     let obj = Translate::new(Arc::new(obj), &Vec3::new(156.0, 206.0, 300.0));
