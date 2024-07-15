@@ -2,6 +2,7 @@ mod aabb;
 mod bvh;
 mod camera;
 mod color;
+mod edge;
 mod hittable;
 mod hittable_list;
 mod interval;
@@ -19,11 +20,11 @@ mod texture;
 mod translate;
 mod triangle;
 mod vec3;
-mod edge;
 
 use crate::bvh::BvhNode;
 use crate::camera::{Camera, CameraSettings, ImageSettings};
 use crate::color::Color;
+use crate::edge::edge_detection;
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Material, Metal};
 use crate::medium::ConstantMedium;
@@ -460,6 +461,25 @@ fn cornell_box() {
     exit(0);
 }
 
+fn edge_detect() {
+    let path = std::path::Path::new("output/advanced/image3.jpg");
+    let img = image::open("images/Book2Final.jpg").unwrap();
+    let rgb_img: image::RgbImage = img.to_rgb8();
+    let result = edge_detection(rgb_img);
+
+    println!(
+        "Output image as \"{}\"",
+        style(path.to_str().unwrap()).yellow()
+    );
+    let output_image = image::DynamicImage::ImageRgb8(result);
+    let mut output_file = File::create(path).unwrap();
+    match output_image.write_to(&mut output_file, image::ImageOutputFormat::Jpeg(100)) {
+        Ok(_) => {}
+        Err(_) => println!("{}", style("Outputting image fails.").red()),
+    }
+    exit(0);
+}
+
 fn main() {
     if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         bouncing_spheres();
@@ -471,6 +491,8 @@ fn main() {
         quads();
     } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         cornell_box();
+    } else if thread_rng().gen_range(0.0..1.0) < 0.9999991 {
+        edge_detect();
     }
     let path = std::path::Path::new("output/book2/image23.jpg");
     let prefix = path.parent().unwrap();

@@ -173,33 +173,33 @@ impl Camera {
             let lights = lights.clone();
             let copy = Sensor::new(self);
             let rend_line = thread::spawn(move || {
-               for j in (0..image_height).rev() {
-                   for i in 0..image_width {
-                       if (i + j) % 20 != n {
-                           continue;
-                       }
+                for j in (0..image_height).rev() {
+                    for i in 0..image_width {
+                        if (i + j) % 20 != n {
+                            continue;
+                        }
 
-                       let mut pixel_color: Color = Color::new(0.0, 0.0, 0.0);
+                        let mut pixel_color: Color = Color::new(0.0, 0.0, 0.0);
 
-                       for s_j in 0..copy.sqrt_spp {
-                           for s_i in 0..copy.sqrt_spp {
-                               let r = copy.get_ray(i, j, s_i, s_j);
-                               pixel_color +=
-                                   copy.ray_color(&r, copy.max_depth, &world, lights.clone());
-                           }
-                       }
-                       pixel_color *= copy.pixel_samples_scale;
+                        for s_j in 0..copy.sqrt_spp {
+                            for s_i in 0..copy.sqrt_spp {
+                                let r = copy.get_ray(i, j, s_i, s_j);
+                                pixel_color +=
+                                    copy.ray_color(&r, copy.max_depth, &world, lights.clone());
+                            }
+                        }
+                        pixel_color *= copy.pixel_samples_scale;
 
-                       let mut img = img.lock().unwrap();
-                       let pixel = img.get_pixel_mut(i, j);
-                       *pixel = pixel_color.write_color();
-                       drop(img);
+                        let mut img = img.lock().unwrap();
+                        let pixel = img.get_pixel_mut(i, j);
+                        *pixel = pixel_color.write_color();
+                        drop(img);
 
-                       let progress = progress.lock().unwrap();
-                       progress.inc(1);
-                       drop(progress);
-                   }
-               }
+                        let progress = progress.lock().unwrap();
+                        progress.inc(1);
+                        drop(progress);
+                    }
+                }
             });
             rend_lines.push(rend_line);
         }

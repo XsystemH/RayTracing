@@ -2,10 +2,10 @@ use crate::bvh::BvhNode;
 use crate::color::Color;
 use crate::hittable_list::HittableList;
 use crate::material::{Lambertian, Material, Metal};
+use crate::texture::ImageTexture;
 use crate::triangle::Triangle;
 use crate::vec3::Point3;
 use std::sync::Arc;
-use crate::texture::ImageTexture;
 
 pub fn read_obj(obj_filename: &str, scale: f64) -> HittableList {
     let mut object = HittableList::new();
@@ -36,7 +36,7 @@ pub fn read_obj(obj_filename: &str, scale: f64) -> HittableList {
     for (i, m) in models.iter().enumerate() {
         let mesh = &m.mesh;
 
-        let mut mat:Arc<dyn Material> = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.8)));
+        let mut mat: Arc<dyn Material> = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.8)));
         if mat_is_ok {
             if let Some(id) = mesh.material_id {
                 if let Some(diffuse) = materials.clone().unwrap()[id].diffuse {
@@ -48,28 +48,27 @@ pub fn read_obj(obj_filename: &str, scale: f64) -> HittableList {
                     println!("  The color of Lambertian is {:?}", diffuse);
                 } else if let Some(specular) = materials.clone().unwrap()[id].specular {
                     if let Some(shininess) = materials.clone().unwrap()[id].shininess {
-                        mat = Arc::new(Metal::new(Color::new(
-                            specular[0] as f64,
-                            specular[1] as f64,
-                            specular[2] as f64,
-                        ), shininess as f64,
+                        mat = Arc::new(Metal::new(
+                            Color::new(specular[0] as f64, specular[1] as f64, specular[2] as f64),
+                            shininess as f64,
                         ));
                         println!("  The color of Metal is {:?}, Ns = {}", specular, shininess);
                     } else {
                         println!("  Metal import wrong!");
                     }
-                } else if let Some(diffuse_texture) = &materials.clone().unwrap()[id].diffuse_texture {
+                } else if let Some(diffuse_texture) =
+                    &materials.clone().unwrap()[id].diffuse_texture
+                {
                     println!("  Map image file: {}", diffuse_texture);
                     let tex = Arc::new(ImageTexture::new(diffuse_texture));
                     mat = Arc::new(Lambertian::new_tex(tex));
-                }
-                else {
+                } else {
                     println!("    Unsupported Material!");
                 }
             }
         }
 
-        if mesh.face_arities.len() != 0 {
+        if !mesh.face_arities.is_empty() {
             println!("Number of Faces of model{}: {}", i, mesh.face_arities.len(),);
             let mut next_face = 0;
             for f in 0..mesh.face_arities.len() {
@@ -104,9 +103,10 @@ pub fn read_obj(obj_filename: &str, scale: f64) -> HittableList {
                     }
                 }
             }
-        } else { // All triangles
+        } else {
+            // All triangles
             println!("    Model[{}] has {} triangles", i, mesh.indices.len() / 3);
-            let mut p: [Point3;3] = [Color::white();3];
+            let mut p: [Point3; 3] = [Color::white(); 3];
             let mut t = 0;
             for v in &mesh.indices {
                 p[t] = Point3::new(
