@@ -463,6 +463,8 @@ fn cornell_box() {
 
 fn edge_detect() {
     let path = std::path::Path::new("output/advanced/image3.jpg");
+    let prefix = path.parent().unwrap();
+    std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
     let img = image::open("images/Book1Final.jpg").unwrap();
     let rgb_img: image::RgbImage = img.to_rgb8();
     let result = edge_detection(rgb_img);
@@ -491,7 +493,7 @@ fn main() {
         quads();
     } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         cornell_box();
-    } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
+    } else if thread_rng().gen_range(0.0..1.0) < 0.9999991 {
         edge_detect();
     }
     let path = std::path::Path::new("output/book2/image23.jpg");
