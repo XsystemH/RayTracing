@@ -409,9 +409,9 @@ fn cornell_box() {
     //     white,
     // )));
 
-    let obj = read_obj("Cubone.obj", 500.0);
+    let obj = read_obj("ps1.obj", 1.0);
     let obj = RotateY::new(Arc::new(obj), 30.0);
-    let obj = Translate::new(Arc::new(obj), &Vec3::new(256.0, 256.0, 0.0));
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(256.0, 100.0, 0.0));
     world.add(Arc::new(obj));
     // world.add(Arc::new(Triangle::new(
     //     &Point3::new(0.0, 0.0, 400.0),
@@ -491,7 +491,7 @@ fn main() {
         quads();
     } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         cornell_box();
-    } else if thread_rng().gen_range(0.0..1.0) < 0.9999991 {
+    } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         edge_detect();
     }
     let path = std::path::Path::new("output/book2/image23.jpg");
@@ -622,7 +622,7 @@ fn main() {
         aspect_ratio: 1.0,
         image_width: 1200,
         quality: 100,
-        samples_per_pixel: 5000,
+        samples_per_pixel: 2500,
         max_depth: 40,
         background: Color::black(),
     };
