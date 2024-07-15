@@ -57,3 +57,23 @@ Currently support Lambertian color import.
 Example:
 
 ![Pokemon Fight](images/PokemonFight.jpg)
+
+### Edge Detection
+
+Firstly I average the R G B with
+`let g = 0.299 * pixel[0] as f64 + 0.587 * pixel[1] as f64 + 0.114 * pixel[2] as f64;`
+to get the gray image of the origin image.
+
+Then I do Sobel operator on the gray image, and make the part that `> max` black, and the others white. (where `max` is a variable given before running the program)
+
+So we get:
+
+![](images/Edge.jpg)
+
+As you can see, the noise is too noisy.
+
+But for the image with less noise, the result is quiet satisfiable.
+
+![](images/Edge1.jpg)
+
+However, this picture has a very low DOF, so that the edges that too far and too close are blurred, so it could be very hard to distinguish a blurred edge.

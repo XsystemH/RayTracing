@@ -463,7 +463,7 @@ fn cornell_box() {
 
 fn edge_detect() {
     let path = std::path::Path::new("output/advanced/image3.jpg");
-    let img = image::open("images/Book2Final.jpg").unwrap();
+    let img = image::open("images/Book1Final.jpg").unwrap();
     let rgb_img: image::RgbImage = img.to_rgb8();
     let result = edge_detection(rgb_img);
 

@@ -2,8 +2,8 @@ use image::RgbImage;
 
 pub fn edge_detection(img: RgbImage) -> RgbImage {
     let mut gray = RgbImage::new(img.width(), img.height());
-    for i in (0..gray.height()).rev() {
-        for j in 0..gray.width() {
+    for j in (0..gray.height()).rev() {
+        for i in 0..gray.width() {
             let pixel = img.get_pixel(i, j);
             let pixel_gray = gray.get_pixel_mut(i, j);
             let g = 0.299 * pixel[0] as f64 + 0.587 * pixel[1] as f64 + 0.114 * pixel[2] as f64; // from OpenCV
