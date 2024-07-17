@@ -1,0 +1,9 @@
+# Blender 4.1.1 MTL File: 'None'
+# www.blender.org
+newmtl yellow
+
+Kd 1.0 0.79607844 0.019607844
+
+newmtl blue
+
+Kd 0.0 0.22745098 0.4392157

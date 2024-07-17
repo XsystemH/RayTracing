@@ -1,0 +1,16 @@
+mtllib Cubone.mtl
+v 0 0 0
+v 0 0 1
+v 0 1 0
+v 0 1 1
+v 1 0 0
+v 1 0 1
+v 1 1 0
+v 1 1 1
+
+usemtl mat11
+f 1 2 3
+f 1 5 6 2
+
+usemtl mat13
+f 4 2 6 8
