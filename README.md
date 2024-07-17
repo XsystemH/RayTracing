@@ -2,6 +2,8 @@
 
 A 2-week object in PPCA of ACMClass-2023
 
+![](images/Final.jpg)
+
 ![](images/Book1Final.jpg)
 
 ![](images/Book2Final.jpg)
@@ -77,3 +79,17 @@ But for the image with less noise, the result is quiet satisfiable.
 ![](images/Edge1.jpg)
 
 However, this picture has a very low DOF, so that the edges that too far and too close are blurred, so it could be very hard to distinguish a blurred edge.
+
+And here is the edge of `final scene`
+
+![](images/Edge2.jpg)
+
+Moreover, I added a function to apply the edges to the origin image.
+
+![](images/Edge3.jpg)
+
+## Acknowledgment
+
+The objects of Final Scene are downloaded in [poly.pizza](https://poly.pizza/)
+
+The logo `Ray-Tracer` is made by myself with `Blender 4.1`

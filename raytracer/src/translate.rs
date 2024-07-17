@@ -36,6 +36,14 @@ impl Hittable for Translate {
     fn bounding_box(&self) -> Aabb {
         self.bbox.clone()
     }
+
+    fn pdf_value(&self, origin: &Point3, direction: &Vec3) -> f64 {
+        self.object.pdf_value(&(*origin - self.offset), direction)
+    }
+
+    fn random(&self, origin: &Point3) -> Vec3 {
+        self.object.random(&(*origin - self.offset))
+    }
 }
 
 pub struct RotateY {
@@ -115,5 +123,21 @@ impl Hittable for RotateY {
 
     fn bounding_box(&self) -> Aabb {
         self.bbox.clone()
+    }
+
+    fn pdf_value(&self, origin: &Point3, direction: &Vec3) -> f64 {
+        let mut ori = *origin;
+        let mut dir = *direction;
+
+        ori[0] = origin[0] * self.cos_theta - origin[2] * self.sin_theta;
+        ori[2] = origin[0] * self.sin_theta + origin[2] * self.cos_theta;
+        dir[0] = direction[0] * self.cos_theta - direction[2] * self.sin_theta;
+        dir[2] = direction[0] * self.sin_theta + direction[2] * self.cos_theta;
+
+        self.object.pdf_value(&ori, &dir)
+    }
+
+    fn random(&self, origin: &Point3) -> Vec3 {
+        self.object.random(origin)
     }
 }

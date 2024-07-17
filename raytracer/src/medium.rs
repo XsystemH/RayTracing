@@ -8,7 +8,7 @@ use crate::interval::Interval;
 use crate::material::{Isotropic, Material};
 use crate::ray::Ray;
 use crate::texture::Texture;
-use crate::vec3::Vec3;
+use crate::vec3::{Point3, Vec3};
 
 pub struct ConstantMedium {
     boundary: Arc<dyn Hittable>,
@@ -95,5 +95,13 @@ impl Hittable for ConstantMedium {
 
     fn bounding_box(&self) -> Aabb {
         self.boundary.bounding_box()
+    }
+
+    fn pdf_value(&self, origin: &Point3, direction: &Vec3) -> f64 {
+        self.boundary.pdf_value(origin, direction)
+    }
+
+    fn random(&self, origin: &Point3) -> Vec3 {
+        self.boundary.random(origin)
     }
 }

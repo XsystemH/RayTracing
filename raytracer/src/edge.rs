@@ -18,7 +18,7 @@ pub fn edge_detection(img: RgbImage) -> RgbImage {
     // sober
 
     let mut result = RgbImage::new(img.width() - 2, img.height() - 2);
-    let max = 100;
+    let max = 80;
 
     for j in 0..gray.height() - 2 {
         for i in 0..gray.width() - 2 {

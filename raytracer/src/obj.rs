@@ -69,12 +69,12 @@ pub fn read_obj(obj_filename: &str, scale: f64) -> HittableList {
         }
 
         if !mesh.face_arities.is_empty() {
-            println!("Number of Faces of model{}: {}", i, mesh.face_arities.len(),);
+            println!("  Number of Faces of model{}: {}", i, mesh.face_arities.len(),);
             let mut next_face = 0;
             for f in 0..mesh.face_arities.len() {
                 let end = next_face + mesh.face_arities[f] as usize;
                 let face_indices: Vec<_> = mesh.indices[next_face..end].iter().collect();
-                println!("    face[{}] = {:?}", f, face_indices);
+                // println!("    face[{}] = {:?}", f, face_indices);
                 next_face = end;
 
                 let mut p: [Point3; 3] = [Color::white(); 3];

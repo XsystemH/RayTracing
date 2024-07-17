@@ -6,6 +6,8 @@ use crate::ray::Ray;
 use std::cmp::Ordering;
 use std::cmp::Ordering::{Greater, Less};
 use std::sync::Arc;
+use rand::{Rng, thread_rng};
+use crate::vec3::{Point3, Vec3};
 
 #[derive(Clone)]
 pub struct BvhNode {
@@ -100,5 +102,19 @@ impl Hittable for BvhNode {
 
     fn bounding_box(&self) -> Aabb {
         self.bbox.clone()
+    }
+
+    fn pdf_value(&self, origin: &Point3, direction: &Vec3) -> f64 {
+        0.5 * self.left.pdf_value(origin, direction) +
+            0.5 * self.right.pdf_value(origin, direction)
+    }
+
+    fn random(&self, origin: &Point3) -> Vec3 {
+        let s = thread_rng().gen_range(0..2);
+        if s == 0 {
+            self.left.random(origin)
+        } else{
+            self.right.random(origin)
+        }
     }
 }

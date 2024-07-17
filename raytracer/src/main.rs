@@ -38,6 +38,7 @@ use console::style;
 use rand::{thread_rng, Rng};
 use std::sync::Arc;
 use std::{fs::File, process::exit};
+use image::{GenericImageView, RgbImage};
 
 fn bouncing_spheres() {
     let path = std::path::Path::new("output/book2/image2.jpg");
@@ -465,9 +466,28 @@ fn edge_detect() {
     let path = std::path::Path::new("output/advanced/image3.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
-    let img = image::open("images/Book1Final.jpg").unwrap();
+    let img = image::open("images/Final.jpg").unwrap();
     let rgb_img: image::RgbImage = img.to_rgb8();
     let result = edge_detection(rgb_img);
+    let mut combine = RgbImage::new(result.width(), result.height());
+
+    for j in 0..combine.height() {
+        for i in 0..combine.width() {
+            let pixel = combine.get_pixel_mut(i, j);
+            let edge = result.get_pixel(i, j);
+            let origin = img.get_pixel(i + 1, j + 1);
+
+            if edge[0] > 0 {
+                pixel[0] = origin[0];
+                pixel[1] = origin[1];
+                pixel[2] = origin[2];
+            } else {
+                pixel[0] = 0;
+                pixel[1] = 0;
+                pixel[2] = 0;
+            }
+        }
+    }
 
     println!(
         "Output image as \"{}\"",
@@ -479,6 +499,222 @@ fn edge_detect() {
         Ok(_) => {}
         Err(_) => println!("{}", style("Outputting image fails.").red()),
     }
+
+    let path = std::path::Path::new("output/advanced/image3_c.jpg");
+    let prefix = path.parent().unwrap();
+    std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
+    let output_image = image::DynamicImage::ImageRgb8(combine);
+    let mut output_file = File::create(path).unwrap();
+    match output_image.write_to(&mut output_file, image::ImageOutputFormat::Jpeg(100)) {
+        Ok(_) => {}
+        Err(_) => println!("{}", style("Outputting image fails.").red()),
+    }
+    exit(0);
+}
+
+fn final_scene() {
+    let path = std::path::Path::new("output/advanced/image4.jpg");
+    let prefix = path.parent().unwrap();
+    std::fs::create_dir_all(prefix).expect("Cannot create all the parents");
+
+    let mut world = HittableList::new();
+    let mut lights = HittableList::new();
+
+    let stadium = Arc::new(Lambertian::new_tex(Arc::new(ImageTexture::new("Stadium.jpg"))));
+    let sky_box = Arc::new(Sphere::new(
+        &Point3::new(0.0, 400.0, 0.0),
+        2000.0,
+        stadium
+    ));
+    let sky_box = RotateY::new(sky_box, -58.5);
+    world.add(Arc::new(sky_box));
+
+    let diffuse = Arc::new(DiffuseLight::new(&Color::new(8.0, 8.0, 8.0)));
+
+    world.add(Arc::new(Quad::new(
+        &Point3::new(0.0, 450.0, -810.0),
+        &Vec3::new(800.0, 0.0, 0.0),
+        &Vec3::new(0.0, 450.0, 0.0),
+        diffuse.clone(),
+    )));
+    lights.add(Arc::new(Quad::new(
+        &Point3::new(0.0, 450.0, -810.0),
+        &Vec3::new(800.0, 0.0, 0.0),
+        &Vec3::new(0.0, 450.0, 0.0),
+        diffuse,
+    )));
+
+    let diffuse = Arc::new(DiffuseLight::new(&Color::new(3.0, 3.0, 3.0)));
+
+    world.add(Arc::new(Quad::new(
+        &Point3::new(0.0, 1600.0, 0.0),
+        &Vec3::new(1600.0, 0.0, 0.0),
+        &Vec3::new(0.0, 0.0, 800.0),
+        diffuse.clone(),
+    )));
+    lights.add(Arc::new(Quad::new(
+        &Point3::new(0.0, 1600.0, 0.0),
+        &Vec3::new(1600.0, 0.0, 0.0),
+        &Vec3::new(0.0, 0.0, 800.0),
+        diffuse,
+    )));
+
+    let obj = read_obj("title.obj", 300.0);
+    let obj = RotateY::new(Arc::new(obj), 0.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(1540.0, 700.0, 600.0));
+    world.add(Arc::new(obj));
+
+    let obj = read_obj("pokeball.obj", 200.0);
+    let obj = RotateY::new(Arc::new(obj), 0.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(800.0, 370.0, 100.0));
+    world.add(Arc::new(obj));
+
+    let obj = read_obj("field.obj", 1000.0);
+    let obj = RotateY::new(Arc::new(obj), 0.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(800.0, 170.0, 300.0));
+    world.add(Arc::new(obj));
+
+    let obj = read_obj("Cubone.obj", 300.0);
+    let obj = RotateY::new(Arc::new(obj), 45.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(1050.0, 300.0, 200.0));
+    world.add(Arc::new(obj));
+
+    let obj = read_obj("Pikachu.obj", 120.0);
+    let obj = RotateY::new(Arc::new(obj), 0.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(800.0, 250.0, -50.0));
+    world.add(Arc::new(obj));
+
+    let obj = read_obj("Hat.obj", 120.0);
+    let obj = RotateY::new(Arc::new(obj), -10.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(797.0, 285.0, -50.0));
+    world.add(Arc::new(obj));
+
+    let obj = read_obj("Margikarp.obj", 200.0);
+    let obj = RotateY::new(Arc::new(obj), 0.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(1100.0, 200.0, 50.0));
+    world.add(Arc::new(obj));
+
+    let obj = read_obj("Snorlax.obj", 500.0);
+    let obj = RotateY::new(Arc::new(obj), -30.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(500.0, 300.0, 300.0));
+    world.add(Arc::new(obj));
+
+    let obj = read_obj("Haunter.obj", 350.0);
+    let obj = RotateY::new(Arc::new(obj), 30.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(1200.0, 350.0, 300.0));
+    world.add(Arc::new(obj));
+
+    let obj = read_obj("Bulbasaur.obj", 150.0);
+    let obj = RotateY::new(Arc::new(obj), -20.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(700.0, 200.0, 0.0));
+    world.add(Arc::new(obj));
+
+    let obj = read_obj("Squirtle.obj", 320.0);
+    let obj = RotateY::new(Arc::new(obj), 85.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(900.0, 240.0, 0.0));
+    world.add(Arc::new(obj));
+
+    let obj = read_obj("Charmander.obj", 150.0);
+    let obj = RotateY::new(Arc::new(obj), -30.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(580.0, 220.0, 0.0));
+    world.add(Arc::new(obj));
+
+    let obj = read_obj("Jigglypuff.obj", 50.0);
+    let obj = RotateY::new(Arc::new(obj), 30.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(1000.0, 200.0, 0.0));
+    world.add(Arc::new(obj));
+
+    let obj = read_obj("Marill.obj", 200.0);
+    let obj = RotateY::new(Arc::new(obj), 45.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(450.0, 220.0, 50.0));
+    world.add(Arc::new(obj));
+
+    let obj = read_obj("Bellsprout.obj", 100.0);
+    let obj = RotateY::new(Arc::new(obj), 60.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(1250.0, 220.0, 150.0));
+    world.add(Arc::new(obj));
+
+    let obj = read_obj("Eevee.obj", 180.0);
+    let obj = RotateY::new(Arc::new(obj), -30.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(380.0, 270.0, 80.0));
+    world.add(Arc::new(obj));
+
+    let obj = read_obj("Magnemite.obj", 100.0);
+    let obj = RotateY::new(Arc::new(obj), -20.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(350.0, 400.0, 90.0));
+    world.add(Arc::new(obj));
+
+    let obj = read_obj("Oddish.obj", 200.0);
+    let obj = RotateY::new(Arc::new(obj), 45.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(980.0, 280.0, 320.0));
+    world.add(Arc::new(obj));
+
+    let obj = read_obj("Poliwag.obj", 200.0);
+    let obj = RotateY::new(Arc::new(obj), 45.0);
+    let obj = Translate::new(Arc::new(obj), &Vec3::new(1200.0, 200.0, 300.0));
+    world.add(Arc::new(obj));
+
+    let advertise = Arc::new(Lambertian::new_tex(Arc::new(ImageTexture::new("Advertisement.jpg"))));
+
+    world.add(Arc::new(Quad::new(
+        &Point3::new(1600.0, 50.0, 800.0),
+        &Vec3::new(-1600.0, 0.0, 0.0),
+        &Vec3::new(0.0, 250.0, 0.0),
+        advertise.clone()
+    )));
+
+    world.add(Arc::new(Quad::new(
+        &Point3::new(0.0, 50.0, 800.0),
+        &Vec3::new(0.0, 0.0, -800.0),
+        &Vec3::new(0.0, 250.0, 0.0),
+        advertise.clone()
+    )));
+
+    world.add(Arc::new(Quad::new(
+        &Point3::new(1600.0, 50.0, 0.0),
+        &Vec3::new(0.0, 0.0, 800.0),
+        &Vec3::new(0.0, 250.0, 0.0),
+        advertise
+    )));
+
+    let world = HittableList::new_from(Arc::new(BvhNode::from_list(&mut world)));
+    let lights = HittableList::new_from(Arc::new(BvhNode::from_list(&mut lights)));
+
+    let image_settings = ImageSettings {
+        aspect_ratio: 16.0 / 9.0,
+        image_width: 1920,
+        quality: 100,
+        samples_per_pixel: 1200,
+        max_depth: 30,
+        background: Color::black(),
+    };
+
+    let camera_settings = CameraSettings {
+        vfov: 40.0,
+        look_from: Point3::new(800.0, 450.0, -800.0),
+        look_at: Point3::new(800.0, 450.0, 0.0),
+        vup: Vec3::new(0.0, 1.0, 0.0),
+        defocus_angle: 0.0,
+        focus_dist: 10.0,
+    };
+
+    let mut camera = Camera::new(image_settings, camera_settings);
+    camera.render(world, Arc::new(lights));
+
+    println!(
+        "Output image as \"{}\"",
+        style(path.to_str().unwrap()).yellow()
+    );
+    let output_image = image::DynamicImage::ImageRgb8(camera.img);
+    let mut output_file = File::create(path).unwrap();
+    match output_image.write_to(
+        &mut output_file,
+        image::ImageOutputFormat::Jpeg(camera.quality),
+    ) {
+        Ok(_) => {}
+        Err(_) => println!("{}", style("Outputting image fails.").red()),
+    }
+
     exit(0);
 }
 
@@ -493,8 +729,10 @@ fn main() {
         quads();
     } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         cornell_box();
-    } else if thread_rng().gen_range(0.0..1.0) < 0.9999991 {
+    } else if thread_rng().gen_range(0.0..1.0) < 0.0000001 {
         edge_detect();
+    } else if thread_rng().gen_range(0.0..1.0) < 0.9999991 {
+        final_scene();
     }
     let path = std::path::Path::new("output/book2/image23.jpg");
     let prefix = path.parent().unwrap();
@@ -622,7 +860,7 @@ fn main() {
 
     let image_settings = ImageSettings {
         aspect_ratio: 1.0,
-        image_width: 1200,
+        image_width: 600,
         quality: 100,
         samples_per_pixel: 2500,
         max_depth: 40,
